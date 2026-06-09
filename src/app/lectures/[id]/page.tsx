@@ -32,7 +32,7 @@ export default async function LecturePage({
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
-      <Link href="/" className="inline-flex items-center gap-1.5 text-sm font-semibold text-purple-600 hover:text-purple-800 mb-6 transition-colors">
+      <Link href="/" className="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-600 hover:text-emerald-800 mb-6 transition-colors">
         <ArrowLeft size={16} />
         Back to Lectures
       </Link>
@@ -42,13 +42,13 @@ export default async function LecturePage({
         <div className="p-6 sm:p-8">
           <div className="flex items-start justify-between mb-6">
             <div>
-              <span className="text-xs sm:text-sm font-extrabold bg-gradient-to-r from-purple-600 to-emerald-500 bg-clip-text text-transparent">
+              <span className="text-xs sm:text-sm font-extrabold bg-gradient-to-r from-emerald-600 to-emerald-500 bg-clip-text text-transparent">
                 Lecture {lecture.order_index}
               </span>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mt-3">{lecture.title}</h1>
               {lecture.description && <p className="text-gray-600 mt-2 text-sm sm:text-base">{lecture.description}</p>}
             </div>
-            <div className="gradient-primary rounded-2xl p-3 sm:p-4 text-white shadow-lg shadow-purple-500/20 hidden sm:block">
+            <div className="gradient-primary rounded-2xl p-3 sm:p-4 text-white shadow-lg shadow-emerald-500/20 hidden sm:block">
               <BookOpen size={24} className="sm:w-7 sm:h-7" />
             </div>
           </div>
@@ -62,7 +62,7 @@ export default async function LecturePage({
               </a>
             )}
             <Link href={`/practice/${lecture.id}`}
-              className="inline-flex items-center gap-2 px-6 sm:px-8 py-2.5 sm:py-3 gradient-primary text-white rounded-full font-bold text-sm hover:shadow-lg hover:shadow-purple-500/25 transition-all hover:scale-105 active:scale-95 shadow-md">
+              className="inline-flex items-center gap-2 px-6 sm:px-8 py-2.5 sm:py-3 gradient-primary text-white rounded-full font-bold text-sm hover:shadow-lg hover:shadow-emerald-500/25 transition-all hover:scale-105 active:scale-95 shadow-md">
               <Code size={18} />
               {questions && questions.length > 0 ? "Practice Questions" : "Start Practicing"}
             </Link>
@@ -73,7 +73,7 @@ export default async function LecturePage({
       {questions && questions.length > 0 && (
         <div className="mt-8 sm:mt-10">
           <h2 className="text-lg sm:text-xl font-extrabold text-gray-800 mb-4 flex items-center gap-2">
-            <Sparkles size={18} className="text-purple-500" />
+            <Sparkles size={18} className="text-emerald-500" />
             Practice Questions
           </h2>
           <div className="grid gap-3">
@@ -93,3 +93,4 @@ export default async function LecturePage({
     </div>
   );
 }
+

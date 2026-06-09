@@ -42,7 +42,7 @@ export default function RegisterPage() {
       {/* Background decorations */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-20 -right-20 w-72 h-72 bg-emerald-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20" />
-        <div className="absolute -bottom-20 -left-20 w-72 h-72 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20" />
+        <div className="absolute -bottom-20 -left-20 w-72 h-72 bg-emerald-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20" />
         <div className="absolute top-1/3 left-1/4 text-4xl opacity-10 animate-float">🚀</div>
         <div className="absolute bottom-1/4 right-1/4 text-3xl opacity-10 animate-bounce-soft">💻</div>
       </div>
@@ -67,7 +67,7 @@ export default function RegisterPage() {
                 placeholder="e.g. python_coder_99"
                 required
                 minLength={3}
-                className="w-full px-4 py-2.5 rounded-xl border-2 border-gray-100 focus:border-purple-400 focus:ring-4 focus:ring-purple-100 outline-none transition-all text-sm"
+                className="w-full px-4 py-2.5 rounded-xl border-2 border-gray-100 focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100 outline-none transition-all text-sm"
               />
             </div>
             <div>
@@ -101,7 +101,7 @@ export default function RegisterPage() {
 
           <p className="text-center text-sm text-gray-500 mt-6">
             Already have an account?{" "}
-            <Link href="/login" className="font-extrabold bg-gradient-to-r from-purple-600 to-emerald-500 bg-clip-text text-transparent hover:underline">
+            <Link href="/login" className="font-extrabold bg-gradient-to-r from-emerald-600 to-emerald-500 bg-clip-text text-transparent hover:underline">
               Sign in
             </Link>
           </p>

@@ -9,9 +9,9 @@ interface Props {
 export default function OutputPanel({ output, error, running }: Props) {
   return (
     <div className="bg-[#1e1e1e]">
-      <div className="flex items-center gap-2 px-3 sm:px-4 py-1.5 bg-gradient-to-r from-purple-900/40 via-emerald-900/20 to-transparent">
-        <Terminal size={13} className="text-purple-400 shrink-0" />
-        <span className="text-[11px] font-bold text-purple-300 uppercase tracking-wider">Output</span>
+      <div className="flex items-center gap-2 px-3 sm:px-4 py-1.5 bg-gradient-to-r from-emerald-900/40 via-emerald-900/20 to-transparent">
+        <Terminal size={13} className="text-emerald-400 shrink-0" />
+        <span className="text-[11px] font-bold text-emerald-300 uppercase tracking-wider">Output</span>
         {running && (
           <span className="flex items-center gap-1 ml-auto text-[11px] text-cyan-400">
             <Loader2 size={11} className="animate-spin" />

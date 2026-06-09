@@ -26,7 +26,7 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="sticky top-0 z-50 gradient-primary shadow-lg shadow-purple-500/20">
+    <nav className="sticky top-0 z-50 gradient-primary shadow-lg shadow-emerald-500/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-14 sm:h-16">
           <Link href="/" className="flex items-center gap-2 group">
@@ -49,13 +49,13 @@ export default function Navbar() {
               </Link>
             )}
             {!loading && !user && (
-              <Link href="/login" className="flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold text-purple-700 bg-white hover:bg-yellow-100 hover:shadow-lg transition-all active:scale-95 shadow-md">
+              <Link href="/login" className="flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold text-emerald-700 bg-white hover:bg-yellow-100 hover:shadow-lg transition-all active:scale-95 shadow-md">
                 Sign In
               </Link>
             )}
             {user && (
               <>
-                <span className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-purple-100">
+                <span className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-emerald-100">
                   <User size={15} />
                   {user.username}
                 </span>
@@ -99,7 +99,7 @@ export default function Navbar() {
             )}
             {user && (
               <>
-                <div className="flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-purple-100">
+                <div className="flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-emerald-100">
                   <User size={15} />
                   {user.username}
                 </div>
@@ -118,7 +118,7 @@ export default function Navbar() {
 
 function NavLink({ href, icon, label }: { href: string; icon: React.ReactNode; label: string }) {
   return (
-    <Link href={href} className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-purple-100 hover:text-white hover:bg-white/15 transition-all">
+    <Link href={href} className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-emerald-100 hover:text-white hover:bg-white/15 transition-all">
       {icon}
       {label}
     </Link>

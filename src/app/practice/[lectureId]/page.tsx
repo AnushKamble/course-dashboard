@@ -51,7 +51,7 @@ export default async function PracticeListPage({
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
       <Link href={`/lectures/${lectureId}`}
-        className="inline-flex items-center gap-1.5 text-sm font-semibold text-purple-600 hover:text-purple-800 mb-6 transition-colors">
+        className="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-600 hover:text-emerald-800 mb-6 transition-colors">
         <ArrowLeft size={16} />
         Back to Lecture
       </Link>
@@ -95,3 +95,4 @@ export default async function PracticeListPage({
     </div>
   );
 }
+

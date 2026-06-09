@@ -27,7 +27,7 @@ async function SubmissionsList() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
-      <Link href="/admin" className="inline-flex items-center gap-1.5 text-sm font-semibold text-purple-600 hover:text-purple-800 mb-6 transition-colors"><ArrowLeft size={16} />Back to Admin</Link>
+      <Link href="/admin" className="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-600 hover:text-emerald-800 mb-6 transition-colors"><ArrowLeft size={16} />Back to Admin</Link>
 
       <div className="flex items-center gap-3 mb-8">
         <div className="gradient-green rounded-2xl p-3 text-white shadow-lg shadow-emerald-500/20"><CheckSquare size={22} className="sm:w-6 sm:h-6" /></div>
@@ -62,7 +62,7 @@ async function SubmissionRow({ sub, markSubmission }: { sub: any; markSubmission
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 sm:p-5">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-sm font-bold text-purple-600 bg-purple-50 px-2.5 py-0.5 rounded-full">
+            <span className="text-sm font-bold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full">
               {sub.profiles?.username || "Unknown"}
             </span>
             <span className="text-sm text-gray-300">&rarr;</span>
@@ -74,7 +74,7 @@ async function SubmissionRow({ sub, markSubmission }: { sub: any; markSubmission
         </div>
 
         <details className="group">
-          <summary className="flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-purple-600 cursor-pointer list-none transition-colors">
+          <summary className="flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-emerald-600 cursor-pointer list-none transition-colors">
             <Code size={14} />
             View Code
           </summary>
@@ -84,8 +84,8 @@ async function SubmissionRow({ sub, markSubmission }: { sub: any; markSubmission
             </pre>
             {sub.output && (
               <>
-                <div className="border-t border-gray-700 px-4 py-1.5 bg-gradient-to-r from-purple-900/30 to-transparent">
-                  <span className="text-[11px] font-bold text-purple-300 uppercase">Output</span>
+                <div className="border-t border-gray-700 px-4 py-1.5 bg-gradient-to-r from-emerald-900/30 to-transparent">
+                  <span className="text-[11px] font-bold text-emerald-300 uppercase">Output</span>
                 </div>
                 <pre className="px-4 pb-3 text-[13px] font-mono text-gray-300 whitespace-pre-wrap leading-relaxed">
                   {sub.output}

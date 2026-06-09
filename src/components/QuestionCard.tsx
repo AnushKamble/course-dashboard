@@ -43,7 +43,7 @@ export default function QuestionCard({ question, lectureId, submission }: Props)
               <Code size={16} className="sm:w-[18px] sm:h-[18px]" />
             </div>
             <div className="min-w-0">
-              <h3 className="font-bold text-sm sm:text-base text-gray-800 mb-1 group-hover:text-purple-700 transition-colors truncate">
+              <h3 className="font-bold text-sm sm:text-base text-gray-800 mb-1 group-hover:text-emerald-700 transition-colors truncate">
                 {question.order_index}. {question.title}
               </h3>
               <p className="text-xs sm:text-sm text-gray-500 line-clamp-2">
@@ -53,7 +53,7 @@ export default function QuestionCard({ question, lectureId, submission }: Props)
           </div>
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             {getStatusBadge()}
-            <ChevronRight size={16} className="text-gray-300 group-hover:text-purple-500 group-hover:translate-x-1 transition-all" />
+            <ChevronRight size={16} className="text-gray-300 group-hover:text-emerald-500 group-hover:translate-x-1 transition-all" />
           </div>
         </div>
       </div>

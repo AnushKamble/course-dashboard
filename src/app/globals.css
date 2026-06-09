@@ -1,15 +1,12 @@
 @import "tailwindcss";
 
 @theme inline {
+  --color-fun-dark: #047857;
+  --color-fun-forest: #059669;
   --color-fun-green: #10B981;
   --color-fun-emerald: #34D399;
-  --color-fun-purple: #8B5CF6;
-  --color-fun-deeppurple: #7C3AED;
-  --color-fun-orange: #F97316;
-  --color-fun-yellow: #FACC15;
-  --color-fun-cyan: #06B6D4;
-  --color-fun-lime: #10B981;
-  --color-fun-teal: #14B8A6;
+  --color-fun-lime: #84CC16;
+  --color-fun-light: #6EE7B7;
   --color-bg-warm: #FFFBEB;
   --color-bg-card: #FFFFFF;
   --font-sans: var(--font-nunito), "Nunito", ui-sans-serif, system-ui, sans-serif;
@@ -43,8 +40,8 @@
 }
 
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.4); }
-  50% { box-shadow: 0 0 20px 6px rgba(139, 92, 246, 0.2); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.4); }
+  50% { box-shadow: 0 0 20px 6px rgba(5, 150, 105, 0.2); }
 }
 
 @keyframes sparkle {
@@ -67,43 +64,40 @@
 body {
   background: #FFFBEB;
   background-image: radial-gradient(circle at 20% 50%, rgba(16, 185, 129, 0.04) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.04) 0%, transparent 50%),
-    radial-gradient(circle at 40% 80%, rgba(6, 182, 212, 0.04) 0%, transparent 50%),
-    radial-gradient(circle at 60% 40%, rgba(249, 115, 22, 0.03) 0%, transparent 50%);
+    radial-gradient(circle at 80% 20%, rgba(5, 150, 105, 0.04) 0%, transparent 50%),
+    radial-gradient(circle at 40% 80%, rgba(52, 211, 153, 0.04) 0%, transparent 50%),
+    radial-gradient(circle at 60% 40%, rgba(4, 120, 87, 0.03) 0%, transparent 50%);
   color: #1F2937;
   font-family: var(--font-sans);
 }
 
-/* Gradient classes — each is a unique vibrant combo */
+/* Gradient classes — all pure green */
 .gradient-primary {
-  background: linear-gradient(135deg, #8B5CF6, #10B981);
+  background: linear-gradient(135deg, #059669, #10B981);
 }
 .gradient-secondary {
-  background: linear-gradient(135deg, #10B981, #06B6D4);
+  background: linear-gradient(135deg, #047857, #059669);
 }
 .gradient-accent {
-  background: linear-gradient(135deg, #FACC15, #F97316);
-}
-.gradient-green {
-  background: linear-gradient(135deg, #10B981, #06B6D4);
-}
-.gradient-sky {
-  background: linear-gradient(135deg, #06B6D4, #8B5CF6);
-}
-.gradient-purple-green {
-  background: linear-gradient(135deg, #7C3AED, #10B981);
-}
-.gradient-orange-yellow {
-  background: linear-gradient(135deg, #F97316, #FACC15);
-}
-.gradient-cyan-teal {
-  background: linear-gradient(135deg, #06B6D4, #14B8A6);
-}
-.gradient-green-emerald {
   background: linear-gradient(135deg, #10B981, #34D399);
 }
+.gradient-green {
+  background: linear-gradient(135deg, #059669, #22C55E);
+}
+.gradient-sky {
+  background: linear-gradient(135deg, #34D399, #10B981);
+}
+.gradient-dark {
+  background: linear-gradient(135deg, #047857, #059669);
+}
+.gradient-lime {
+  background: linear-gradient(135deg, #10B981, #84CC16);
+}
+.gradient-light {
+  background: linear-gradient(135deg, #34D399, #6EE7B7);
+}
 .gradient-rainbow {
-  background: linear-gradient(90deg, #8B5CF6, #10B981, #F97316, #FACC15, #10B981, #06B6D4, #8B5CF6);
+  background: linear-gradient(90deg, #047857, #059669, #10B981, #22C55E, #34D399, #6EE7B7, #047857);
   background-size: 300% 100%;
   animation: rainbow-bg 6s linear infinite;
 }
@@ -112,9 +106,9 @@ body {
   100% { background-position: 300% 50%; }
 }
 
-/* Rainbow text animation */
+/* Rainbow text animation — pure green */
 .text-rainbow {
-  background: linear-gradient(90deg, #8B5CF6, #10B981, #F97316, #FACC15, #10B981, #06B6D4);
+  background: linear-gradient(90deg, #047857, #059669, #10B981, #22C55E, #34D399, #6EE7B7);
   background-size: 300% 100%;
   -webkit-background-clip: text;
   background-clip: text;
@@ -137,7 +131,7 @@ body {
 }
 .card-hover:hover {
   transform: translateY(-6px) scale(1.01);
-  box-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(16, 185, 129, 0.1);
+  box-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(5, 150, 105, 0.1);
 }
 
 /* Gradient border */
@@ -150,7 +144,7 @@ body {
   inset: 0;
   border-radius: inherit;
   padding: 2px;
-  background: linear-gradient(135deg, #8B5CF6, #10B981, #F97316);
+  background: linear-gradient(135deg, #059669, #10B981, #34D399);
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -159,12 +153,12 @@ body {
 
 /* Fun rainbow border animation */
 .rainbow-border {
-  border-image: linear-gradient(135deg, #8B5CF6, #10B981, #F97316, #FACC15, #10B981, #06B6D4) 1;
+  border-image: linear-gradient(135deg, #047857, #059669, #10B981, #22C55E, #34D399, #6EE7B7) 1;
 }
 
 /* Fun decorative dot pattern for cards */
 .dot-pattern {
-  background-image: radial-gradient(circle, rgba(139,92,246,0.1) 1px, transparent 1px);
+  background-image: radial-gradient(circle, rgba(16,185,129,0.1) 1px, transparent 1px);
   background-size: 16px 16px;
 }
 

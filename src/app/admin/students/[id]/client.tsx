@@ -49,7 +49,7 @@ export function StudentDetailClient({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-8">
         <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-lg border border-gray-100">
           <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-            <Sparkles size={16} className="text-purple-500" />
+            <Sparkles size={16} className="text-emerald-500" />
             Progress Overview
           </h3>
           <ProgressPieChart correct={correct} incorrect={incorrect} pending={pending} notAttempted={notAttempted} />
@@ -64,13 +64,13 @@ export function StudentDetailClient({
       </div>
 
       <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-        <div className="px-5 sm:px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-purple-50/50 to-emerald-50/50">
+        <div className="px-5 sm:px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-emerald-50/50 to-emerald-50/50">
           <h3 className="font-bold text-gray-800">All Questions</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="bg-gradient-to-r from-purple-50 to-emerald-50">
+              <tr className="bg-gradient-to-r from-emerald-50 to-emerald-50">
                 <th className="text-left px-5 sm:px-6 py-3 text-sm font-extrabold text-gray-600">Question</th>
                 <th className="text-center px-5 sm:px-6 py-3 text-sm font-extrabold text-gray-600">Status</th>
                 <th className="text-left px-5 sm:px-6 py-3 text-sm font-extrabold text-gray-600">Submitted</th>
@@ -89,7 +89,7 @@ export function StudentDetailClient({
                 return (
                   <tr
                     key={q.id}
-                    className="border-b border-gray-50 hover:bg-gradient-to-r hover:from-purple-50/30 hover:to-emerald-50/30 transition-all"
+                    className="border-b border-gray-50 hover:bg-gradient-to-r hover:from-emerald-50/30 hover:to-emerald-50/30 transition-all"
                   >
                     <td className="px-5 sm:px-6 py-4">
                       <div className="flex items-center gap-2">
@@ -135,3 +135,4 @@ function StatCard({ label, value, sub, gradient }: { label: string; value: numbe
     </div>
   );
 }
+

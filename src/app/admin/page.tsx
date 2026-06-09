@@ -67,11 +67,11 @@ export default async function AdminOverview() {
         <Link href="/admin/students"
           className="bg-white rounded-2xl p-5 sm:p-6 shadow-lg border border-gray-100 card-hover flex items-center justify-between group">
           <div>
-            <div className="gradient-primary rounded-xl p-2.5 text-white inline-flex mb-3 shadow-lg shadow-purple-500/20"><Users size={18} /></div>
+            <div className="gradient-primary rounded-xl p-2.5 text-white inline-flex mb-3 shadow-lg shadow-emerald-500/20"><Users size={18} /></div>
             <p className="font-extrabold text-gray-800">View Students</p>
             <p className="text-sm text-gray-500 mt-1">{totalStudents || 0} enrolled students</p>
           </div>
-          <ArrowRight size={20} className="text-gray-300 group-hover:text-purple-500 group-hover:translate-x-1 transition-all" />
+          <ArrowRight size={20} className="text-gray-300 group-hover:text-emerald-500 group-hover:translate-x-1 transition-all" />
         </Link>
       </div>
     </div>

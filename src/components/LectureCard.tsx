@@ -13,11 +13,11 @@ const cardGradients = [
 const lectureEmojis = ["🐍", "🎨", "🔢", "📦", "🔗", "🗂️", "⚡", "🎮", "🌐", "📊"];
 
 const gradientTexts = [
-  "from-purple-600 to-emerald-500",
+  "from-emerald-600 to-emerald-500",
   "from-emerald-500 to-cyan-500",
   "from-yellow-500 to-orange-500",
   "from-emerald-500 to-cyan-500",
-  "from-cyan-500 to-purple-500",
+  "from-cyan-500 to-emerald-500",
 ];
 
 export default function LectureCard({ lecture, index }: { lecture: Lecture; index: number }) {
@@ -35,7 +35,7 @@ export default function LectureCard({ lecture, index }: { lecture: Lecture; inde
       <div className={`h-2 ${gradient}`} />
       <div className="p-5 sm:p-6">
         <div className="flex items-start justify-between mb-4">
-          <div className={`${gradient} rounded-xl p-2.5 sm:p-3 text-white shadow-lg ${gradient === "gradient-primary" ? "shadow-purple-500/20" : gradient === "gradient-secondary" ? "shadow-emerald-500/20" : gradient === "gradient-accent" ? "shadow-yellow-500/20" : gradient === "gradient-green" ? "shadow-emerald-500/20" : "shadow-cyan-500/20"} group-hover:scale-110 transition-transform duration-200`}>
+          <div className={`${gradient} rounded-xl p-2.5 sm:p-3 text-white shadow-lg ${gradient === "gradient-primary" ? "shadow-emerald-500/20" : gradient === "gradient-secondary" ? "shadow-emerald-500/20" : gradient === "gradient-accent" ? "shadow-yellow-500/20" : gradient === "gradient-green" ? "shadow-emerald-500/20" : "shadow-cyan-500/20"} group-hover:scale-110 transition-transform duration-200`}>
             <span className="text-lg sm:text-xl leading-none">{emoji}</span>
           </div>
           <span className={`text-xs sm:text-sm font-extrabold bg-gradient-to-r ${textGrad} bg-clip-text text-transparent px-3 py-1 rounded-full bg-white shadow-sm border border-gray-100`}>
@@ -43,7 +43,7 @@ export default function LectureCard({ lecture, index }: { lecture: Lecture; inde
           </span>
         </div>
 
-        <h3 className="text-base sm:text-lg font-extrabold text-gray-800 mb-2 line-clamp-2 group-hover:text-purple-700 transition-colors">
+        <h3 className="text-base sm:text-lg font-extrabold text-gray-800 mb-2 line-clamp-2 group-hover:text-emerald-700 transition-colors">
           {lecture.title}
         </h3>
 
@@ -74,7 +74,7 @@ export default function LectureCard({ lecture, index }: { lecture: Lecture; inde
 
         {/* Fun decorative corner */}
         <div className="absolute top-0 right-0 w-16 h-16 overflow-hidden opacity-5">
-          <Sparkles size={40} className="absolute -top-2 -right-2 text-purple-500" />
+          <Sparkles size={40} className="absolute -top-2 -right-2 text-emerald-500" />
         </div>
       </div>
     </div>

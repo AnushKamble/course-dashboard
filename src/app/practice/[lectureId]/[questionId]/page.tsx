@@ -115,18 +115,18 @@ export default function PracticeQuestionPage() {
     setSubmitting(false);
   };
 
-  if (loading) return <div className="flex items-center justify-center min-h-[80vh]"><Loader2 size={32} className="animate-spin text-indigo-600" /></div>;
-  if (!question) return <div className="text-center py-20"><h2 className="text-xl font-bold text-gray-700">Question not found</h2><Link href={`/practice/${lectureId}`} className="text-indigo-600 hover:underline mt-2 inline-block">Back to practice</Link></div>;
+  if (loading) return <div className="flex items-center justify-center min-h-[80vh]"><Loader2 size={32} className="animate-spin text-emerald-600" /></div>;
+  if (!question) return <div className="text-center py-20"><h2 className="text-xl font-bold text-gray-700">Question not found</h2><Link href={`/practice/${lectureId}`} className="text-emerald-600 hover:underline mt-2 inline-block">Back to practice</Link></div>;
 
   return (
     <div className="h-[calc(100vh-4rem)] flex flex-col">
       <div className="flex items-center gap-3 px-4 sm:px-6 lg:px-8 py-3 border-b border-gray-100 bg-white/50 shrink-0">
-        <Link href={`/practice/${lectureId}`} className="flex items-center gap-1 text-sm text-gray-400 hover:text-indigo-600 transition-colors">
+        <Link href={`/practice/${lectureId}`} className="flex items-center gap-1 text-sm text-gray-400 hover:text-emerald-600 transition-colors">
           <ArrowLeft size={14} />
           <span className="hidden sm:inline">Back</span>
         </Link>
         <span className="text-gray-300">|</span>
-        <span className="text-xs sm:text-sm font-medium text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-full">Q{question.order_index}</span>
+        <span className="text-xs sm:text-sm font-medium text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full">Q{question.order_index}</span>
         <h1 className="text-xs sm:text-sm font-semibold text-gray-700 truncate">{question.title}</h1>
       </div>
 
@@ -159,7 +159,7 @@ export default function PracticeQuestionPage() {
                 Run
               </button>
               <button onClick={handleSubmit} disabled={submitting || submitted}
-                className="flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:bg-gray-600 text-white text-xs sm:text-sm font-semibold rounded-lg transition-all active:scale-95 touch-manipulation">
+                className="flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:bg-gray-600 text-white text-xs sm:text-sm font-semibold rounded-lg transition-all active:scale-95 touch-manipulation">
                 {submitting ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
                 {submitted ? "Submitted" : "Submit"}
               </button>
@@ -177,7 +177,7 @@ export default function PracticeQuestionPage() {
       </div>
 
       {pyodideLoading && (
-        <div className="fixed bottom-4 right-4 left-4 sm:left-auto bg-indigo-900 text-white text-xs sm:text-sm rounded-xl px-4 py-3 flex items-center gap-2 shadow-lg backdrop-blur-sm z-50">
+        <div className="fixed bottom-4 right-4 left-4 sm:left-auto bg-emerald-900 text-white text-xs sm:text-sm rounded-xl px-4 py-3 flex items-center gap-2 shadow-lg backdrop-blur-sm z-50">
           <Loader2 size={14} className="animate-spin shrink-0" />
           <span className="truncate">Loading Python runtime (~15MB first time)...</span>
         </div>
@@ -185,3 +185,4 @@ export default function PracticeQuestionPage() {
     </div>
   );
 }
+
