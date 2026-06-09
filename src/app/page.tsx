@@ -15,7 +15,7 @@ export default async function Home() {
     <div>
       {/* Hero */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-100 via-emerald-50 to-emerald-200 opacity-70" />
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-100 via-purple-50 to-pink-200 opacity-70" />
 
         {/* Floating decorative elements */}
         <div className="absolute top-16 left-8 sm:top-24 sm:left-16 text-4xl sm:text-5xl opacity-20 animate-float hidden sm:block">🐍</div>
@@ -26,16 +26,17 @@ export default async function Home() {
         <div className="absolute top-1/2 left-1/5 text-2xl opacity-10 animate-wiggle hidden sm:block">⭐</div>
 
         {/* Decorative blobs */}
-        <div className="absolute -top-20 -right-20 w-72 h-72 bg-emerald-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float-slow" />
-        <div className="absolute -bottom-20 -left-20 w-72 h-72 bg-emerald-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float" />
+        <div className="absolute -top-20 -right-20 w-72 h-72 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float-slow" />
+        <div className="absolute -bottom-20 -left-20 w-72 h-72 bg-pink-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float" />
+        <div className="absolute top-1/3 left-1/3 w-48 h-48 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float" />
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 text-center">
-          <div className="inline-flex items-center gap-2 bg-white/90 backdrop-blur-sm shadow-lg shadow-emerald-500/10 border border-emerald-200 rounded-full px-4 py-1.5 mb-6 animate-slide-up">
+          <div className="inline-flex items-center gap-2 bg-white/90 backdrop-blur-sm shadow-lg shadow-purple-500/10 border border-purple-200 rounded-full px-4 py-1.5 mb-6 animate-slide-up">
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-500" />
             </span>
-            <span className="text-sm font-bold bg-gradient-to-r from-emerald-600 via-emerald-500 to-emerald-300 bg-clip-text text-transparent">
+            <span className="text-sm font-bold bg-gradient-to-r from-purple-600 via-pink-500 to-orange-400 bg-clip-text text-transparent">
               Interactive Python Course
             </span>
           </div>
@@ -55,12 +56,12 @@ export default async function Home() {
 
           <div className="flex items-center justify-center gap-2 sm:gap-3 text-sm text-gray-500 mb-10 animate-slide-up">
             <span className="flex items-center gap-1.5 bg-white/80 px-3 py-1.5 rounded-full shadow-sm">
-              <Code size={16} className="text-emerald-500" />
+              <Code size={16} className="text-blue-500" />
               <span className="hidden sm:inline">Interactive</span> Editor
             </span>
             <span className="w-1 h-1 bg-gray-300 rounded-full" />
             <span className="flex items-center gap-1.5 bg-white/80 px-3 py-1.5 rounded-full shadow-sm">
-              <Rocket size={16} className="text-emerald-500" />
+              <Rocket size={16} className="text-orange-500" />
               <span className="hidden sm:inline">Hands-on</span> Practice
             </span>
             <span className="w-1 h-1 bg-gray-300 rounded-full" />
@@ -76,14 +77,14 @@ export default async function Home() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 sm:pb-20">
         <div className="flex items-center justify-between mb-6 sm:mb-8">
           <div className="flex items-center gap-3">
-            <div className="gradient-primary rounded-xl p-2 text-white shadow-lg shadow-emerald-500/20">
+            <div className="bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl p-2 text-white shadow-lg shadow-blue-500/20">
               <BookOpen size={18} className="sm:w-5 sm:h-5" />
             </div>
             <h2 className="text-xl sm:text-2xl font-extrabold text-gray-800">Course Lectures</h2>
           </div>
           {lectures && (
-            <span className="text-xs sm:text-sm font-semibold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-full shadow-sm flex items-center gap-1">
-              <Zap size={14} className="text-emerald-500" />
+            <span className="text-xs sm:text-sm font-semibold text-purple-600 bg-purple-50 px-3 py-1.5 rounded-full shadow-sm flex items-center gap-1">
+              <Zap size={14} className="text-purple-500" />
               {lectures.length} lectures
             </span>
           )}
@@ -96,8 +97,8 @@ export default async function Home() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-16 sm:py-20 bg-white/80 backdrop-blur-sm rounded-3xl border-2 border-dashed border-emerald-200 shadow-lg shadow-emerald-500/5">
-            <div className="gradient-primary inline-flex rounded-2xl p-4 text-white shadow-lg shadow-emerald-500/20 mb-4">
+          <div className="text-center py-16 sm:py-20 bg-white/80 backdrop-blur-sm rounded-3xl border-2 border-dashed border-purple-200 shadow-lg shadow-purple-500/5">
+            <div className="bg-gradient-to-br from-orange-500 to-amber-500 inline-flex rounded-2xl p-4 text-white shadow-lg shadow-orange-500/20 mb-4">
               <BookOpen size={28} className="sm:w-8 sm:h-8" />
             </div>
             <h3 className="text-xl sm:text-2xl font-bold text-gray-700 mb-2">No Lectures Yet</h3>

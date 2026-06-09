@@ -40,10 +40,10 @@ export function StudentDetailClient({
   return (
     <>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-8">
-        <StatCard label="Attempted" value={attemptedIds.size} sub={`of ${allQuestions.length}`} gradient="gradient-primary" />
-        <StatCard label="Correct" value={correct} sub="" gradient="gradient-green" />
-        <StatCard label="Incorrect" value={incorrect} sub="" gradient="gradient-secondary" />
-        <StatCard label="Pending" value={pending} sub="" gradient="gradient-accent" />
+        <StatCard label="Attempted" value={attemptedIds.size} sub={`of ${allQuestions.length}`} gradient="bg-gradient-to-br from-blue-500 to-cyan-500" />
+        <StatCard label="Correct" value={correct} sub="" gradient="bg-gradient-to-br from-emerald-500 to-green-500" />
+        <StatCard label="Incorrect" value={incorrect} sub="" gradient="bg-gradient-to-br from-rose-500 to-pink-500" />
+        <StatCard label="Pending" value={pending} sub="" gradient="bg-gradient-to-br from-orange-500 to-amber-500" />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-8">

@@ -48,7 +48,7 @@ export default async function LecturePage({
               <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mt-3">{lecture.title}</h1>
               {lecture.description && <p className="text-gray-600 mt-2 text-sm sm:text-base">{lecture.description}</p>}
             </div>
-            <div className="gradient-primary rounded-2xl p-3 sm:p-4 text-white shadow-lg shadow-emerald-500/20 hidden sm:block">
+            <div className="bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl p-3 sm:p-4 text-white shadow-lg shadow-purple-500/20 hidden sm:block">
               <BookOpen size={24} className="sm:w-7 sm:h-7" />
             </div>
           </div>
@@ -80,7 +80,7 @@ export default async function LecturePage({
             {questions.map((q: any) => (
               <Link key={q.id} href={`/practice/${lecture.id}/${q.id}`}
                 className="flex items-center gap-3 bg-white rounded-2xl p-4 shadow-md border border-gray-100 card-hover group">
-                <div className="gradient-primary rounded-xl p-2 sm:p-2.5 text-white shadow-lg group-hover:scale-110 transition-transform shrink-0"><Code size={16} className="sm:w-[18px] sm:h-[18px]" /></div>
+                <div className="bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl p-2 sm:p-2.5 text-white shadow-lg group-hover:scale-110 transition-transform shrink-0"><Code size={16} className="sm:w-[18px] sm:h-[18px]" /></div>
                 <div className="min-w-0">
                   <span className="text-sm sm:text-base font-bold text-gray-800">{q.title}</span>
                   <p className="text-xs sm:text-sm text-gray-500 line-clamp-1">{q.description}</p>

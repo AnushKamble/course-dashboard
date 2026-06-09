@@ -3,11 +3,11 @@ import { FileText, ArrowRight, Sparkles } from "lucide-react";
 import type { Lecture } from "@/types";
 
 const cardGradients = [
-  "gradient-primary",
-  "gradient-secondary",
-  "gradient-accent",
-  "gradient-green",
-  "gradient-sky",
+  "bg-gradient-to-br from-blue-500 to-cyan-500",
+  "bg-gradient-to-br from-purple-500 to-pink-500",
+  "bg-gradient-to-br from-orange-500 to-amber-500",
+  "bg-gradient-to-br from-emerald-500 to-green-500",
+  "bg-gradient-to-br from-rose-500 to-violet-500",
 ];
 
 const lectureEmojis = ["🐍", "🎨", "🔢", "📦", "🔗", "🗂️", "⚡", "🎮", "🌐", "📊"];
@@ -35,7 +35,7 @@ export default function LectureCard({ lecture, index }: { lecture: Lecture; inde
       <div className={`h-2 ${gradient}`} />
       <div className="p-5 sm:p-6">
         <div className="flex items-start justify-between mb-4">
-          <div className={`${gradient} rounded-xl p-2.5 sm:p-3 text-white shadow-lg ${gradient === "gradient-primary" ? "shadow-emerald-500/20" : gradient === "gradient-secondary" ? "shadow-emerald-500/20" : gradient === "gradient-accent" ? "shadow-yellow-500/20" : gradient === "gradient-green" ? "shadow-emerald-500/20" : "shadow-cyan-500/20"} group-hover:scale-110 transition-transform duration-200`}>
+          <div className={`${gradient} rounded-xl p-2.5 sm:p-3 text-white shadow-lg ${index % 5 === 0 ? "shadow-blue-500/20" : index % 5 === 1 ? "shadow-purple-500/20" : index % 5 === 2 ? "shadow-orange-500/20" : index % 5 === 3 ? "shadow-emerald-500/20" : "shadow-rose-500/20"} group-hover:scale-110 transition-transform duration-200`}>
             <span className="text-lg sm:text-xl leading-none">{emoji}</span>
           </div>
           <span className={`text-xs sm:text-sm font-extrabold bg-gradient-to-r ${textGrad} bg-clip-text text-transparent px-3 py-1 rounded-full bg-white shadow-sm border border-gray-100`}>

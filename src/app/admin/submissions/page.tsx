@@ -30,7 +30,7 @@ async function SubmissionsList() {
       <Link href="/admin" className="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-600 hover:text-emerald-800 mb-6 transition-colors"><ArrowLeft size={16} />Back to Admin</Link>
 
       <div className="flex items-center gap-3 mb-8">
-        <div className="gradient-green rounded-2xl p-3 text-white shadow-lg shadow-emerald-500/20"><CheckSquare size={22} className="sm:w-6 sm:h-6" /></div>
+        <div className="bg-gradient-to-br from-orange-500 to-amber-500 rounded-2xl p-3 text-white shadow-lg shadow-orange-500/20"><CheckSquare size={22} className="sm:w-6 sm:h-6" /></div>
         <div>
           <h1 className="text-xl sm:text-2xl font-extrabold text-gray-900">Review Submissions ✅</h1>
           <p className="text-xs sm:text-sm text-gray-500">{submissions?.length || 0} pending</p>
@@ -46,8 +46,8 @@ async function SubmissionsList() {
           ))}
         </div>
       ) : (
-        <div className="text-center py-16 sm:py-20 bg-white/80 backdrop-blur-sm rounded-3xl border-2 border-dashed border-emerald-200 shadow-lg">
-          <CheckCircle size={48} className="mx-auto text-emerald-400 mb-4" />
+        <div className="text-center py-16 sm:py-20 bg-white/80 backdrop-blur-sm rounded-3xl border-2 border-dashed border-green-200 shadow-lg">
+          <CheckCircle size={48} className="mx-auto text-green-400 mb-4" />
           <h3 className="text-xl sm:text-2xl font-bold text-gray-700 mb-2">All Caught Up! 🎉</h3>
           <p className="text-gray-500 text-sm">No pending submissions to review.</p>
         </div>

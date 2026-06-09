@@ -9,11 +9,11 @@ interface Props {
 }
 
 const qGradients = [
-  "gradient-primary",
-  "gradient-secondary",
-  "gradient-green",
-  "gradient-accent",
-  "gradient-sky",
+  "bg-gradient-to-br from-blue-500 to-cyan-500",
+  "bg-gradient-to-br from-orange-500 to-amber-500",
+  "bg-gradient-to-br from-emerald-500 to-green-500",
+  "bg-gradient-to-br from-rose-500 to-pink-500",
+  "bg-gradient-to-br from-purple-500 to-violet-500",
 ];
 
 export default function QuestionCard({ question, lectureId, submission }: Props) {

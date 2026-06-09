@@ -27,16 +27,16 @@ export default async function AdminOverview() {
     .eq("status", "submitted");
 
   const cards = [
-    { title: "Students", value: totalStudents || 0, icon: Users, gradient: "gradient-primary", href: "/admin/students" },
-    { title: "Lectures", value: totalLectures || 0, icon: FileText, gradient: "gradient-secondary", href: "/" },
-    { title: "Questions", value: totalQuestions || 0, icon: FileText, gradient: "gradient-accent", href: "/" },
-    { title: "Pending Reviews", value: pendingSubmissions || 0, icon: CheckSquare, gradient: "gradient-green", href: "/admin/submissions" },
+    { title: "Students", value: totalStudents || 0, icon: Users, gradient: "bg-gradient-to-br from-blue-500 to-cyan-500", href: "/admin/students" },
+    { title: "Lectures", value: totalLectures || 0, icon: FileText, gradient: "bg-gradient-to-br from-violet-500 to-purple-500", href: "/" },
+    { title: "Questions", value: totalQuestions || 0, icon: FileText, gradient: "bg-gradient-to-br from-orange-500 to-amber-500", href: "/" },
+    { title: "Pending Reviews", value: pendingSubmissions || 0, icon: CheckSquare, gradient: "bg-gradient-to-br from-rose-500 to-pink-500", href: "/admin/submissions" },
   ];
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
       <div className="flex items-center gap-3 mb-8">
-        <div className="gradient-accent rounded-2xl p-3 text-white shadow-lg shadow-orange-500/20"><Shield size={22} className="sm:w-6 sm:h-6" /></div>
+        <div className="bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl p-3 text-white shadow-lg shadow-purple-500/20"><Shield size={22} className="sm:w-6 sm:h-6" /></div>
         <div>
           <h1 className="text-xl sm:text-2xl font-extrabold text-gray-900">Admin Dashboard 🛡️</h1>
           <p className="text-xs sm:text-sm text-gray-500">Manage your Python course</p>
@@ -58,7 +58,7 @@ export default async function AdminOverview() {
         <Link href="/admin/submissions"
           className="bg-white rounded-2xl p-5 sm:p-6 shadow-lg border border-gray-100 card-hover flex items-center justify-between group">
           <div>
-            <div className="gradient-green rounded-xl p-2.5 text-white inline-flex mb-3 shadow-lg shadow-emerald-500/20"><CheckSquare size={18} /></div>
+            <div className="bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl p-2.5 text-white inline-flex mb-3 shadow-lg shadow-orange-500/20"><CheckSquare size={18} /></div>
             <p className="font-extrabold text-gray-800">Review Submissions</p>
             <p className="text-sm text-gray-500 mt-1">{pendingSubmissions || 0} pending reviews</p>
           </div>
@@ -67,7 +67,7 @@ export default async function AdminOverview() {
         <Link href="/admin/students"
           className="bg-white rounded-2xl p-5 sm:p-6 shadow-lg border border-gray-100 card-hover flex items-center justify-between group">
           <div>
-            <div className="gradient-primary rounded-xl p-2.5 text-white inline-flex mb-3 shadow-lg shadow-emerald-500/20"><Users size={18} /></div>
+            <div className="bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl p-2.5 text-white inline-flex mb-3 shadow-lg shadow-blue-500/20"><Users size={18} /></div>
             <p className="font-extrabold text-gray-800">View Students</p>
             <p className="text-sm text-gray-500 mt-1">{totalStudents || 0} enrolled students</p>
           </div>

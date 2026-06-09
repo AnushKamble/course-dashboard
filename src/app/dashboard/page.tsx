@@ -61,28 +61,28 @@ export default function DashboardPage() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-8">
             <StatCard
               icon={<Code size={18} />}
-              gradient="gradient-primary"
+              gradient="bg-gradient-to-br from-blue-500 to-cyan-500"
               label="Total"
               value={stats.total_questions}
               sub="Questions"
             />
             <StatCard
               icon={<Clock size={18} />}
-              gradient="gradient-accent"
+              gradient="bg-gradient-to-br from-orange-500 to-amber-500"
               label="Attempted"
               value={stats.attempted}
               sub={`Of ${stats.total_questions}`}
             />
             <StatCard
               icon={<CheckCircle size={18} />}
-              gradient="gradient-green"
+              gradient="bg-gradient-to-br from-emerald-500 to-green-500"
               label="Correct"
               value={stats.correct}
               sub={stats.attempted > 0 ? Math.round((stats.correct / stats.attempted) * 100) + "% rate" : "No attempts"}
             />
             <StatCard
               icon={<XCircle size={18} />}
-              gradient="gradient-secondary"
+              gradient="bg-gradient-to-br from-rose-500 to-pink-500"
               label="Incorrect"
               value={stats.incorrect}
               sub="Need review"
@@ -92,29 +92,29 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-8">
             <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-lg border border-gray-100 animate-slide-up">
               <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <Sparkles size={16} className="text-emerald-500" />
+                <Sparkles size={16} className="text-blue-500" />
                 Progress Overview
               </h3>
               <ProgressPieChart correct={stats.correct} incorrect={stats.incorrect} pending={stats.attempted - stats.correct - stats.incorrect} notAttempted={stats.not_attempted} />
             </div>
             <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-lg border border-gray-100 animate-slide-up">
               <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <Sparkles size={16} className="text-emerald-500" />
+                <Sparkles size={16} className="text-purple-500" />
                 Results Breakdown
               </h3>
               <ProgressBarChart correct={stats.correct} incorrect={stats.incorrect} pending={stats.attempted - stats.correct - stats.incorrect} notAttempted={stats.not_attempted} />
             </div>
           </div>
 
-          <Link href="/" className="inline-flex items-center gap-2 gradient-primary text-white px-6 sm:px-8 py-3 sm:py-3.5 rounded-full font-bold text-sm sm:text-base hover:shadow-lg hover:shadow-emerald-500/25 transition-all active:scale-95 shadow-md">
+          <Link href="/" className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 sm:px-8 py-3 sm:py-3.5 rounded-full font-bold text-sm sm:text-base hover:shadow-lg hover:shadow-purple-500/25 transition-all active:scale-95 shadow-md">
             Continue Learning <ArrowRight size={18} />
           </Link>
         </>
       )}
 
       {stats && stats.total_questions === 0 && (
-        <div className="text-center py-16 bg-white/80 backdrop-blur-sm rounded-3xl border-2 border-dashed border-emerald-200 shadow-lg">
-          <div className="gradient-primary inline-flex rounded-2xl p-4 text-white shadow-lg shadow-emerald-500/20 mb-4"><LayoutDashboard size={28} className="sm:w-8 sm:h-8" /></div>
+          <div className="text-center py-16 bg-white/80 backdrop-blur-sm rounded-3xl border-2 border-dashed border-blue-200 shadow-lg">
+          <div className="bg-gradient-to-br from-blue-500 to-cyan-500 inline-flex rounded-2xl p-4 text-white shadow-lg shadow-blue-500/20 mb-4"><LayoutDashboard size={28} className="sm:w-8 sm:h-8" /></div>
           <h3 className="text-xl font-bold text-gray-700 mb-2">No Questions Yet</h3>
           <p className="text-gray-500 text-sm">Questions will appear here once the instructor adds them. 🎓</p>
         </div>

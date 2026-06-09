@@ -35,7 +35,7 @@ export default async function AdminStudents() {
       <Link href="/admin" className="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-600 hover:text-emerald-800 mb-6 transition-colors"><ArrowLeft size={16} />Back to Admin</Link>
 
       <div className="flex items-center gap-3 mb-8">
-        <div className="gradient-primary rounded-2xl p-3 text-white shadow-lg shadow-emerald-500/20"><Users size={22} className="sm:w-6 sm:h-6" /></div>
+          <div className="bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl p-3 text-white shadow-lg shadow-blue-500/20"><Users size={22} className="sm:w-6 sm:h-6" /></div>
         <div>
           <h1 className="text-xl sm:text-2xl font-extrabold text-gray-900">Students 👨‍🎓</h1>
           <p className="text-xs sm:text-sm text-gray-500">{studentStats.length} enrolled students</p>
@@ -78,7 +78,7 @@ export default async function AdminStudents() {
           </div>
         </div>
       ) : (
-        <div className="text-center py-16 bg-white/80 backdrop-blur-sm rounded-3xl border-2 border-dashed border-emerald-200 shadow-lg">
+        <div className="text-center py-16 bg-white/80 backdrop-blur-sm rounded-3xl border-2 border-dashed border-purple-200 shadow-lg">
           <Users size={48} className="mx-auto text-gray-300 mb-4" />
           <h3 className="text-xl font-bold text-gray-700 mb-2">No Students Yet</h3>
           <p className="text-gray-500 text-sm">Students will appear once they sign up. 🎓</p>
