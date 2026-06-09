@@ -1,0 +1,205 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-fun-green: #10B981;
+  --color-fun-emerald: #34D399;
+  --color-fun-purple: #8B5CF6;
+  --color-fun-deeppurple: #7C3AED;
+  --color-fun-orange: #F97316;
+  --color-fun-yellow: #FACC15;
+  --color-fun-cyan: #06B6D4;
+  --color-fun-lime: #10B981;
+  --color-fun-teal: #14B8A6;
+  --color-bg-warm: #FFFBEB;
+  --color-bg-card: #FFFFFF;
+  --font-sans: var(--font-nunito), "Nunito", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-mono), "JetBrains Mono", ui-monospace, monospace;
+
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-float-slow: float 8s ease-in-out infinite;
+  --animate-bounce-soft: bounce-soft 2s ease-in-out infinite;
+  --animate-wiggle: wiggle 1s ease-in-out infinite;
+  --animate-pulse-glow: pulse-glow 2s ease-in-out infinite;
+  --animate-sparkle: sparkle 3s ease-in-out infinite;
+  --animate-rainbow: rainbow 4s linear infinite;
+  --animate-slide-up: slide-up 0.5s ease-out;
+
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-12px); }
+}
+
+@keyframes bounce-soft {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-3deg); }
+  75% { transform: rotate(3deg); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.4); }
+  50% { box-shadow: 0 0 20px 6px rgba(139, 92, 246, 0.2); }
+}
+
+@keyframes sparkle {
+  0%, 100% { opacity: 0.4; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+@keyframes rainbow {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+
+
+body {
+  background: #FFFBEB;
+  background-image: radial-gradient(circle at 20% 50%, rgba(16, 185, 129, 0.04) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.04) 0%, transparent 50%),
+    radial-gradient(circle at 40% 80%, rgba(6, 182, 212, 0.04) 0%, transparent 50%),
+    radial-gradient(circle at 60% 40%, rgba(249, 115, 22, 0.03) 0%, transparent 50%);
+  color: #1F2937;
+  font-family: var(--font-sans);
+}
+
+/* Gradient classes — each is a unique vibrant combo */
+.gradient-primary {
+  background: linear-gradient(135deg, #8B5CF6, #10B981);
+}
+.gradient-secondary {
+  background: linear-gradient(135deg, #10B981, #06B6D4);
+}
+.gradient-accent {
+  background: linear-gradient(135deg, #FACC15, #F97316);
+}
+.gradient-green {
+  background: linear-gradient(135deg, #10B981, #06B6D4);
+}
+.gradient-sky {
+  background: linear-gradient(135deg, #06B6D4, #8B5CF6);
+}
+.gradient-purple-green {
+  background: linear-gradient(135deg, #7C3AED, #10B981);
+}
+.gradient-orange-yellow {
+  background: linear-gradient(135deg, #F97316, #FACC15);
+}
+.gradient-cyan-teal {
+  background: linear-gradient(135deg, #06B6D4, #14B8A6);
+}
+.gradient-green-emerald {
+  background: linear-gradient(135deg, #10B981, #34D399);
+}
+.gradient-rainbow {
+  background: linear-gradient(90deg, #8B5CF6, #10B981, #F97316, #FACC15, #10B981, #06B6D4, #8B5CF6);
+  background-size: 300% 100%;
+  animation: rainbow-bg 6s linear infinite;
+}
+@keyframes rainbow-bg {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 300% 50%; }
+}
+
+/* Rainbow text animation */
+.text-rainbow {
+  background: linear-gradient(90deg, #8B5CF6, #10B981, #F97316, #FACC15, #10B981, #06B6D4);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: rainbow-text 4s linear infinite;
+}
+@keyframes rainbow-text {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 300% 50%; }
+}
+
+/* Fun pill button */
+.btn-fun {
+  @apply inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-sm sm:text-base transition-all duration-200 shadow-md hover:shadow-xl active:scale-95;
+}
+
+/* Card hover with glow */
+.card-hover {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.card-hover:hover {
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(16, 185, 129, 0.1);
+}
+
+/* Gradient border */
+.gradient-border {
+  position: relative;
+}
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 2px;
+  background: linear-gradient(135deg, #8B5CF6, #10B981, #F97316);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Fun rainbow border animation */
+.rainbow-border {
+  border-image: linear-gradient(135deg, #8B5CF6, #10B981, #F97316, #FACC15, #10B981, #06B6D4) 1;
+}
+
+/* Fun decorative dot pattern for cards */
+.dot-pattern {
+  background-image: radial-gradient(circle, rgba(139,92,246,0.1) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+/* Fun status badges */
+.badge-correct {
+  @apply inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full;
+  background: linear-gradient(135deg, #10B981, #34D399);
+  color: white;
+  box-shadow: 0 2px 8px -2px rgba(16, 185, 129, 0.4);
+}
+.badge-incorrect {
+  @apply inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full;
+  background: linear-gradient(135deg, #F43F5E, #FB7185);
+  color: white;
+  box-shadow: 0 2px 8px -2px rgba(244, 63, 94, 0.4);
+}
+.badge-pending {
+  @apply inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full;
+  background: linear-gradient(135deg, #FACC15, #F97316);
+  color: white;
+  box-shadow: 0 2px 8px -2px rgba(250, 204, 21, 0.4);
+}
+.badge-not-attempted {
+  @apply inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full;
+  background: #E5E7EB;
+  color: #6B7280;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: #FEF3C7; border-radius: 4px; }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #FBBF24, #F97316);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #F59E0B, #EA580C);
+}
