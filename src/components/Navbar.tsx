@@ -2,16 +2,14 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { BookOpen, LogOut, LayoutDashboard, Shield, User, Sparkles, Trophy, Flame } from "lucide-react";
+import { BookOpen, LogOut, LayoutDashboard, Shield, User, Sparkles, Trophy, Flame, Megaphone } from "lucide-react";
 import ProfilePhoto from "./ProfilePhoto";
-import ThemePicker from "./ThemePicker";
 import StreakBadge from "./StreakBadge";
 
 export default function Navbar() {
   const [user, setUser] = useState<{ id: string; username: string; role: string; avatar_url?: string | null } | null>(null);
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [theme, setTheme] = useState("green");
 
   useEffect(() => {
     fetch("/api/auth/me")
@@ -19,8 +17,6 @@ export default function Navbar() {
       .then((data) => {
         if (data.user) setUser(data.user);
         setLoading(false);
-        // Fetch theme
-        fetch("/api/gamification/profile").then(r => r.json()).then(d => { if (d.theme) { setTheme(d.theme); document.documentElement.setAttribute("data-theme", d.theme); } }).catch(() => {});
       })
       .catch(() => setLoading(false));
   }, []);
@@ -49,6 +45,7 @@ export default function Navbar() {
             <NavLink href="/" icon={<BookOpen size={15} />} label="Lectures" />
             {user && <NavLink href="/dashboard" icon={<LayoutDashboard size={15} />} label="Dashboard" />}
             {user && <NavLink href="/playground" icon={<Sparkles size={15} />} label="Playground" />}
+            {user && <NavLink href="/announcements" icon={<Megaphone size={15} />} label="Announcements" />}
             {user && <NavLink href="/leaderboard" icon={<Trophy size={15} />} label="Rankings" />}
             {user?.role === "admin" && (
               <Link href="/admin" className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-yellow-200 hover:text-white hover:bg-white/15 transition-all">
@@ -57,7 +54,6 @@ export default function Navbar() {
               </Link>
             )}
             {user && <StreakBadge />}
-            {user && <ThemePicker current={theme} onThemeChange={(t) => { setTheme(t); document.documentElement.setAttribute("data-theme", t); }} />}
             {!loading && !user && (
               <Link href="/login" className="flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold text-emerald-700 bg-white hover:bg-yellow-100 hover:shadow-lg transition-all active:scale-95 shadow-md">
                 Sign In
@@ -102,6 +98,7 @@ export default function Navbar() {
             <MobileNavLink href="/" icon={<BookOpen size={15} />} label="Lectures" onClick={() => setMenuOpen(false)} />
             {user && <MobileNavLink href="/dashboard" icon={<LayoutDashboard size={15} />} label="Dashboard" onClick={() => setMenuOpen(false)} />}
             {user && <MobileNavLink href="/playground" icon={<Sparkles size={15} />} label="Playground" onClick={() => setMenuOpen(false)} />}
+            {user && <MobileNavLink href="/announcements" icon={<Megaphone size={15} />} label="Announcements" onClick={() => setMenuOpen(false)} />}
             {user && <MobileNavLink href="/leaderboard" icon={<Trophy size={15} />} label="Rankings" onClick={() => setMenuOpen(false)} />}
             {user?.role === "admin" && (
               <MobileNavLink href="/admin" icon={<Shield size={15} />} label="Admin" onClick={() => setMenuOpen(false)} />
