@@ -2,12 +2,16 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { BookOpen, LogOut, LayoutDashboard, Shield, User, Sparkles } from "lucide-react";
+import { BookOpen, LogOut, LayoutDashboard, Shield, User, Sparkles, Trophy, Flame } from "lucide-react";
+import ProfilePhoto from "./ProfilePhoto";
+import ThemePicker from "./ThemePicker";
+import StreakBadge from "./StreakBadge";
 
 export default function Navbar() {
-  const [user, setUser] = useState<{ id: string; username: string; role: string } | null>(null);
+  const [user, setUser] = useState<{ id: string; username: string; role: string; avatar_url?: string | null } | null>(null);
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [theme, setTheme] = useState("green");
 
   useEffect(() => {
     fetch("/api/auth/me")
@@ -15,6 +19,8 @@ export default function Navbar() {
       .then((data) => {
         if (data.user) setUser(data.user);
         setLoading(false);
+        // Fetch theme
+        fetch("/api/gamification/profile").then(r => r.json()).then(d => { if (d.theme) { setTheme(d.theme); document.documentElement.setAttribute("data-theme", d.theme); } }).catch(() => {});
       })
       .catch(() => setLoading(false));
   }, []);
@@ -42,12 +48,16 @@ export default function Navbar() {
           <div className="hidden sm:flex items-center gap-1">
             <NavLink href="/" icon={<BookOpen size={15} />} label="Lectures" />
             {user && <NavLink href="/dashboard" icon={<LayoutDashboard size={15} />} label="Dashboard" />}
+            {user && <NavLink href="/playground" icon={<Sparkles size={15} />} label="Playground" />}
+            {user && <NavLink href="/leaderboard" icon={<Trophy size={15} />} label="Rankings" />}
             {user?.role === "admin" && (
               <Link href="/admin" className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-yellow-200 hover:text-white hover:bg-white/15 transition-all">
                 <Shield size={15} />
                 Admin
               </Link>
             )}
+            {user && <StreakBadge />}
+            {user && <ThemePicker current={theme} onThemeChange={(t) => { setTheme(t); document.documentElement.setAttribute("data-theme", t); }} />}
             {!loading && !user && (
               <Link href="/login" className="flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold text-emerald-700 bg-white hover:bg-yellow-100 hover:shadow-lg transition-all active:scale-95 shadow-md">
                 Sign In
@@ -55,10 +65,10 @@ export default function Navbar() {
             )}
             {user && (
               <>
-                <span className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-emerald-100">
-                  <User size={15} />
-                  {user.username}
-                </span>
+                <div className="flex items-center gap-2 px-3 py-1">
+                  <ProfilePhoto avatarUrl={user.avatar_url || null} username={user.username} size={28} onUpdate={(url) => setUser({...user, avatar_url: url})} />
+                  <span className="text-xs font-medium text-emerald-100">{user.username}</span>
+                </div>
                 <button onClick={handleLogout} className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/70 hover:text-red-200 hover:bg-white/15 transition-all">
                   <LogOut size={15} />
                   Logout
@@ -91,6 +101,8 @@ export default function Navbar() {
           <div className="sm:hidden pb-3 border-t border-white/20 mt-2 pt-3 space-y-1 animate-slide-up">
             <MobileNavLink href="/" icon={<BookOpen size={15} />} label="Lectures" onClick={() => setMenuOpen(false)} />
             {user && <MobileNavLink href="/dashboard" icon={<LayoutDashboard size={15} />} label="Dashboard" onClick={() => setMenuOpen(false)} />}
+            {user && <MobileNavLink href="/playground" icon={<Sparkles size={15} />} label="Playground" onClick={() => setMenuOpen(false)} />}
+            {user && <MobileNavLink href="/leaderboard" icon={<Trophy size={15} />} label="Rankings" onClick={() => setMenuOpen(false)} />}
             {user?.role === "admin" && (
               <MobileNavLink href="/admin" icon={<Shield size={15} />} label="Admin" onClick={() => setMenuOpen(false)} />
             )}
@@ -99,11 +111,11 @@ export default function Navbar() {
             )}
             {user && (
               <>
-                <div className="flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-emerald-100">
-                  <User size={15} />
-                  {user.username}
-                </div>
-                <button onClick={() => { handleLogout(); setMenuOpen(false); }} className="flex items-center gap-2 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-white/70 hover:text-red-200 hover:bg-white/15 transition-all">
+                    <div className="flex items-center gap-2 px-3 py-2">
+                      <ProfilePhoto avatarUrl={user.avatar_url || null} username={user.username} size={28} onUpdate={(url) => setUser({...user, avatar_url: url})} />
+                      <span className="text-sm font-medium text-emerald-100">{user.username}</span>
+                    </div>
+                  <button onClick={() => { handleLogout(); setMenuOpen(false); }} className="flex items-center gap-2 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-white/70 hover:text-red-200 hover:bg-white/15 transition-all">
                   <LogOut size={15} />
                   Logout
                 </button>

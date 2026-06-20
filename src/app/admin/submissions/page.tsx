@@ -4,6 +4,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { ArrowLeft, CheckSquare, CheckCircle, XCircle, Code } from "lucide-react";
+import AvatarDisplay from "@/components/AvatarDisplay";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +13,7 @@ async function SubmissionsList() {
 
   const { data: submissions } = await supabase
     .from("submissions")
-    .select("*, questions(title), profiles!inner(username)")
+    .select("*, questions(title), profiles!inner(username, avatar_url)")
     .eq("status", "submitted")
     .order("submitted_at", { ascending: false });
 
@@ -62,6 +63,7 @@ async function SubmissionRow({ sub, markSubmission }: { sub: any; markSubmission
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 sm:p-5">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
+            <AvatarDisplay url={sub.profiles?.avatar_url} username={sub.profiles?.username || "Unknown"} size={24} />
             <span className="text-sm font-bold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full">
               {sub.profiles?.username || "Unknown"}
             </span>

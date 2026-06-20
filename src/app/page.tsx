@@ -1,11 +1,23 @@
 import { createAdminClient } from "@/lib/supabase-admin";
 import LectureCard from "@/components/LectureCard";
 import { Sparkles, Code, Rocket, BookOpen, Star, Zap } from "lucide-react";
+import { getSessionUser } from "@/lib/auth";
+import UserGreeting from "@/components/UserGreeting";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
   const supabase = createAdminClient();
+  const user = await getSessionUser();
+  let profile: { avatar_url?: string | null } | null = null;
+  if (user) {
+    const { data } = await supabase
+      .from("profiles")
+      .select("avatar_url")
+      .eq("id", user.id)
+      .single();
+    profile = data;
+  }
   const { data: lectures } = await supabase
     .from("lectures")
     .select("*")
@@ -72,6 +84,10 @@ export default async function Home() {
           </div>
         </div>
       </section>
+
+      {user && profile && (
+        <UserGreeting username={user.username} avatarUrl={profile?.avatar_url} />
+      )}
 
       {/* Lectures section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 sm:pb-20">

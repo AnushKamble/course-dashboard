@@ -69,6 +69,38 @@ body {
     radial-gradient(circle at 60% 40%, rgba(4, 120, 87, 0.03) 0%, transparent 50%);
   color: #1F2937;
   font-family: var(--font-sans);
+  transition: background 0.3s, color 0.3s;
+}
+
+/* Theme: Dark */
+[data-theme="dark"] body,
+body[data-theme="dark"] {
+  background: #111827;
+  color: #F3F4F6;
+}
+
+/* Theme: Ocean */
+[data-theme="ocean"] body,
+body[data-theme="ocean"] {
+  background: #ECFEFF;
+  background-image: radial-gradient(circle at 20% 50%, rgba(6, 182, 212, 0.06) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(14, 165, 233, 0.04) 0%, transparent 50%);
+}
+
+/* Theme: Sunset */
+[data-theme="sunset"] body,
+body[data-theme="sunset"] {
+  background: #FFF7ED;
+  background-image: radial-gradient(circle at 20% 50%, rgba(251, 146, 60, 0.06) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(249, 115, 22, 0.04) 0%, transparent 50%);
+}
+
+/* Theme: Aurora */
+[data-theme="aurora"] body,
+body[data-theme="aurora"] {
+  background: #FAF5FF;
+  background-image: radial-gradient(circle at 20% 50%, rgba(168, 85, 247, 0.06) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.04) 0%, transparent 50%);
 }
 
 /* Gradient classes — all pure green */

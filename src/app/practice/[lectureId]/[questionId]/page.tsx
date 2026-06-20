@@ -3,9 +3,11 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Play, Send, Loader2, CheckCircle, Lightbulb, Keyboard } from "lucide-react";
+import { ArrowLeft, Play, Send, Loader2, CheckCircle, Lightbulb, Keyboard, Trophy, Sparkles, X } from "lucide-react";
 import CodeEditor from "@/components/CodeEditor";
 import OutputPanel from "@/components/OutputPanel";
+import AvatarDisplay from "@/components/AvatarDisplay";
+import ConfettiOverlay from "@/components/ConfettiOverlay";
 import type { Question } from "@/types";
 
 declare global {
@@ -36,6 +38,9 @@ export default function PracticeQuestionPage() {
   const [pyodide, setPyodide] = useState<any>(null);
   const [pyodideLoading, setPyodideLoading] = useState(true);
   const [pyodideReady, setPyodideReady] = useState(false);
+  const [userData, setUserData] = useState<{ username: string; avatar_url?: string | null } | null>(null);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [xpToast, setXpToast] = useState<{ xp: number; levelUp?: boolean; badges?: string[] } | null>(null);
 
   const lectureId = params.lectureId as string;
   const questionId = params.questionId as string;
@@ -45,6 +50,10 @@ export default function PracticeQuestionPage() {
       const res = await fetch("/api/auth/me");
       const { user } = await res.json();
       if (!user) { router.push(`/login?redirect=/practice/${lectureId}/${questionId}`); return; }
+      setUserData(user);
+
+      // Record daily practice
+      fetch("/api/gamification/record-daily", { method: "POST" }).catch(() => {});
 
       const qRes = await fetch(`/api/questions/${questionId}`);
       const qData = await qRes.json();
@@ -112,6 +121,25 @@ export default function PracticeQuestionPage() {
       body: JSON.stringify({ question_id: question.id, code, output }),
     });
     if (res.ok) setSubmitted(true);
+
+    // Award XP + check badges
+    try {
+      const gRes = await fetch("/api/gamification/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "submitted", questionTitle: question.title }),
+      });
+      const gData = await gRes.json();
+      setShowConfetti(true);
+      setXpToast({
+        xp: gData.xp_gained || 10,
+        levelUp: gData.leveled_up,
+        badges: gData.new_badges?.map((b: any) => b.icon) || [],
+      });
+      setTimeout(() => setShowConfetti(false), 3000);
+      setTimeout(() => setXpToast(null), 4000);
+    } catch { setShowConfetti(true); setTimeout(() => setShowConfetti(false), 2000); }
+
     setSubmitting(false);
   };
 
@@ -128,6 +156,9 @@ export default function PracticeQuestionPage() {
         <span className="text-gray-300">|</span>
         <span className="text-xs sm:text-sm font-medium text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full">Q{question.order_index}</span>
         <h1 className="text-xs sm:text-sm font-semibold text-gray-700 truncate">{question.title}</h1>
+        <div className="ml-auto">
+          <AvatarDisplay url={userData?.avatar_url} username={userData?.username || ""} size={28} />
+        </div>
       </div>
 
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
@@ -180,6 +211,28 @@ export default function PracticeQuestionPage() {
         <div className="fixed bottom-4 right-4 left-4 sm:left-auto bg-emerald-900 text-white text-xs sm:text-sm rounded-xl px-4 py-3 flex items-center gap-2 shadow-lg backdrop-blur-sm z-50">
           <Loader2 size={14} className="animate-spin shrink-0" />
           <span className="truncate">Loading Python runtime (~15MB first time)...</span>
+        </div>
+      )}
+
+      {showConfetti && <ConfettiOverlay fire={showConfetti} type="correct" />}
+
+      {xpToast && (
+        <div className="fixed bottom-4 sm:bottom-6 right-4 left-4 sm:left-auto z-50 animate-slide-up">
+          <div className="bg-white rounded-2xl shadow-2xl border border-emerald-100 px-4 py-3 sm:px-5 sm:py-4 flex items-center gap-3 max-w-sm ml-auto">
+            <div className="bg-gradient-to-br from-emerald-400 to-green-500 rounded-xl p-2 text-white shadow-lg shrink-0">
+              <Trophy size={18} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-extrabold text-gray-800">+{xpToast.xp} XP Earned!</p>
+              {xpToast.levelUp && <p className="text-xs font-bold text-amber-600">🎉 Level Up!</p>}
+              {xpToast.badges && xpToast.badges.length > 0 && (
+                <p className="text-xs font-bold text-purple-600">New badge: {xpToast.badges.join(" ")}</p>
+              )}
+            </div>
+            <button onClick={() => setXpToast(null)} className="p-1 hover:bg-gray-100 rounded-full transition-colors shrink-0">
+              <X size={14} className="text-gray-400" />
+            </button>
+          </div>
         </div>
       )}
     </div>

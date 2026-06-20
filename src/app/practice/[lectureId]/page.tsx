@@ -4,6 +4,7 @@ import { getSessionUser } from "@/lib/auth";
 import Link from "next/link";
 import { ArrowLeft, BookOpen, Sparkles, FileText } from "lucide-react";
 import QuestionCard from "@/components/QuestionCard";
+import AvatarDisplay from "@/components/AvatarDisplay";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +25,12 @@ export default async function PracticeListPage({
     .single();
 
   if (!lecture) notFound();
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("avatar_url")
+    .eq("id", user.id)
+    .single();
 
   const { data: questions } = await supabase
     .from("questions")
@@ -50,11 +57,14 @@ export default async function PracticeListPage({
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
-      <Link href={`/lectures/${lectureId}`}
-        className="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-600 hover:text-emerald-800 mb-6 transition-colors">
-        <ArrowLeft size={16} />
-        Back to Lecture
-      </Link>
+      <div className="flex items-center justify-between mb-6">
+        <Link href={`/lectures/${lectureId}`}
+          className="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-600 hover:text-emerald-800 transition-colors">
+          <ArrowLeft size={16} />
+          Back to Lecture
+        </Link>
+        <AvatarDisplay url={profile?.avatar_url} username={user.username} size={28} />
+      </div>
 
       <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden mb-8 animate-slide-up">
         <div className="gradient-secondary h-3" />

@@ -1,6 +1,8 @@
 import { createAdminClient } from "@/lib/supabase-admin";
 import Link from "next/link";
 import { ArrowLeft, Users, ChevronRight, Sparkles } from "lucide-react";
+import ResetPasswordButton from "@/components/ResetPasswordButton";
+import AvatarDisplay from "@/components/AvatarDisplay";
 
 export const dynamic = "force-dynamic";
 
@@ -58,7 +60,12 @@ export default async function AdminStudents() {
               <tbody>
                 {studentStats.map((student: any, i: number) => (
                   <tr key={student.id} className="border-b border-gray-50 hover:bg-gradient-to-r hover:from-emerald-50/30 hover:to-emerald-50/30 transition-all">
-                    <td className="px-5 py-4 text-sm font-bold text-gray-800">{student.username || "Unnamed"}</td>
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-2">
+                        <AvatarDisplay url={student.avatar_url} username={student.username} size={28} />
+                        <span className="text-sm font-bold text-gray-800">{student.username || "Unnamed"}</span>
+                      </div>
+                    </td>
                     <td className="px-5 py-4 text-sm text-center text-gray-600">{student.totalSubmissions}</td>
                     <td className="px-5 py-4 text-sm text-center">
                       {student.totalSubmissions > 0
@@ -66,10 +73,11 @@ export default async function AdminStudents() {
                         : <span className="text-gray-400">-</span>}
                     </td>
                     <td className="px-5 py-4 text-sm text-center text-gray-500">{new Date(student.created_at).toLocaleDateString()}</td>
-                    <td className="px-5 py-4">
+                    <td className="px-5 py-4 flex items-center gap-3">
                       <Link href={`/admin/students/${student.id}`} className="inline-flex items-center gap-1 text-emerald-600 hover:text-emerald-800 text-sm font-bold transition-colors">
                         View <ChevronRight size={14} />
                       </Link>
+                      <ResetPasswordButton username={student.username} />
                     </td>
                   </tr>
                 ))}
