@@ -39,12 +39,18 @@ INSERT INTO public.badges (name, description, icon, condition_type, condition_va
 ON CONFLICT DO NOTHING;
 
 -- Backfill: award +25 XP for each existing correct submission (non-destructive)
+-- Track which submissions have had their XP bonus awarded
+ALTER TABLE public.submissions ADD COLUMN IF NOT EXISTS xp_awarded BOOLEAN DEFAULT FALSE;
+
+-- Backfill: award +25 XP for each existing correct submission not yet awarded
 UPDATE profiles
 SET xp = xp + subq.correct_count * 25
 FROM (
   SELECT user_id, COUNT(*) AS correct_count
   FROM submissions
-  WHERE status = 'correct'
+  WHERE status = 'correct' AND (xp_awarded IS NULL OR xp_awarded = FALSE)
   GROUP BY user_id
 ) subq
 WHERE profiles.id = subq.user_id;
+
+UPDATE submissions SET xp_awarded = TRUE WHERE status = 'correct' AND (xp_awarded IS NULL OR xp_awarded = FALSE);

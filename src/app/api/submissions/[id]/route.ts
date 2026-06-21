@@ -22,21 +22,21 @@ export async function PATCH(
 
   const { data: sub } = await supabase
     .from("submissions")
-    .select("user_id, status")
+    .select("user_id, status, xp_awarded")
     .eq("id", id)
     .single();
 
   if (!sub) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const { error } = await supabase
-    .from("submissions")
-    .update({ status: newStatus, reviewed_at: new Date().toISOString() })
-    .eq("id", id);
+  const alreadyAwarded = sub.xp_awarded === true;
+  const updateFields: Record<string, any> = { status: newStatus, reviewed_at: new Date().toISOString() };
+  if (newStatus === "correct" && !alreadyAwarded) updateFields.xp_awarded = true;
+
+  const { error } = await supabase.from("submissions").update(updateFields).eq("id", id);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  // Award +25 XP bonus when marking correct (skip if already correct)
-  if (newStatus === "correct" && sub.status !== "correct") {
+  if (newStatus === "correct" && !alreadyAwarded) {
     const { data: profile } = await supabase
       .from("profiles")
       .select("xp, level")

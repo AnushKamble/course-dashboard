@@ -25,18 +25,18 @@ async function SubmissionsList() {
 
     const { data: sub } = await supabase
       .from("submissions")
-      .select("user_id, status")
+      .select("user_id, status, xp_awarded")
       .eq("id", subId)
       .single();
     if (!sub) return;
 
-    await supabase
-      .from("submissions")
-      .update({ status, reviewed_at: new Date().toISOString() })
-      .eq("id", subId);
+    const alreadyAwarded = sub.xp_awarded === true;
+    const updateFields: Record<string, any> = { status, reviewed_at: new Date().toISOString() };
+    if (status === "correct" && !alreadyAwarded) updateFields.xp_awarded = true;
 
-    // Award +25 XP bonus when marking correct (skip if already correct)
-    if (status === "correct" && sub.status !== "correct") {
+    await supabase.from("submissions").update(updateFields).eq("id", subId);
+
+    if (status === "correct" && !alreadyAwarded) {
       const { data: profile } = await supabase
         .from("profiles")
         .select("xp, level")

@@ -23,3 +23,6 @@ INSERT INTO public.schedules (day_type, label, days, timing) VALUES
   ('weekday', 'Weekday Classes', 'Mon, Wed, Fri', '6:00 PM – 7:30 PM'),
   ('weekend', 'Weekend Classes', 'Sat, Sun', '10:00 AM – 12:00 PM')
 ON CONFLICT (day_type) DO NOTHING;
+
+-- Track which submissions have had their XP bonus awarded
+ALTER TABLE public.submissions ADD COLUMN IF NOT EXISTS xp_awarded BOOLEAN DEFAULT FALSE;
