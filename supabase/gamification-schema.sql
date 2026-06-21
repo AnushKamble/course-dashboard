@@ -37,3 +37,14 @@ INSERT INTO public.badges (name, description, icon, condition_type, condition_va
   ('Python Master', 'Reach level 10', '🐍', 'level_10', 10),
   ('Speedy Starter', 'Submit within 5 minutes', '⚡', 'speedy', 1)
 ON CONFLICT DO NOTHING;
+
+-- Backfill: award +25 XP for each existing correct submission (non-destructive)
+UPDATE profiles
+SET xp = xp + subq.correct_count * 25
+FROM (
+  SELECT user_id, COUNT(*) AS correct_count
+  FROM submissions
+  WHERE status = 'correct'
+  GROUP BY user_id
+) subq
+WHERE profiles.id = subq.user_id;
