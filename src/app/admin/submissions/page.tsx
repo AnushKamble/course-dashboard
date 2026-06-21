@@ -22,7 +22,40 @@ async function SubmissionsList() {
     const admin = await getSessionUser();
     if (!admin || admin.role !== "admin") return;
     const supabase = createAdminClient();
-    await supabase.from("submissions").update({ status, reviewed_at: new Date().toISOString() }).eq("id", subId);
+
+    const { data: sub } = await supabase
+      .from("submissions")
+      .select("user_id, status")
+      .eq("id", subId)
+      .single();
+    if (!sub) return;
+
+    await supabase
+      .from("submissions")
+      .update({ status, reviewed_at: new Date().toISOString() })
+      .eq("id", subId);
+
+    // Award +25 XP bonus when marking correct (skip if already correct)
+    if (status === "correct" && sub.status !== "correct") {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("xp, level")
+        .eq("id", sub.user_id)
+        .single();
+
+      const bonusXp = 25;
+      const newXp = (profile?.xp || 0) + bonusXp;
+      const currentLevel = profile?.level || 1;
+      if (newXp >= currentLevel * 100) {
+        await supabase
+          .from("profiles")
+          .update({ xp: newXp, level: currentLevel + 1 })
+          .eq("id", sub.user_id);
+      } else {
+        await supabase.from("profiles").update({ xp: newXp }).eq("id", sub.user_id);
+      }
+    }
+
     revalidatePath("/admin/submissions");
   };
 
