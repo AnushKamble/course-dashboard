@@ -15,6 +15,8 @@ export interface Question {
   starter_code: string;
   order_index: number;
   created_at: string;
+  question_type?: "coding" | "dry_run";
+  code_sample?: string | null;
 }
 
 export interface Submission {

@@ -26,3 +26,7 @@ ON CONFLICT (day_type) DO NOTHING;
 
 -- Track which submissions have had their XP bonus awarded
 ALTER TABLE public.submissions ADD COLUMN IF NOT EXISTS xp_awarded BOOLEAN DEFAULT FALSE;
+
+-- Question types: coding (editor + Pyodide) vs dry_run (code sample + predicted output)
+ALTER TABLE public.questions ADD COLUMN IF NOT EXISTS question_type TEXT DEFAULT 'coding' CHECK (question_type IN ('coding', 'dry_run'));
+ALTER TABLE public.questions ADD COLUMN IF NOT EXISTS code_sample TEXT;

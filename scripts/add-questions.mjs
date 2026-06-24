@@ -71,20 +71,38 @@ async function main() {
     console.log(`\n--- Question ${nextOrder + i} ---`);
     const title = await ask("Question title: ");
     const description = await ask("Description: ");
-    const starterCode = await ask("Starter code (optional): ");
+    const qType = await ask("Question type? (coding/dry_run) [coding]: ");
+    const questionType = qType.trim() === "dry_run" ? "dry_run" : "coding";
+
+    let starterCode = "";
+    let codeSample = null;
+
+    if (questionType === "coding") {
+      starterCode = await ask("Starter code (optional): ");
+    } else {
+      console.log("Enter the code sample (type 'END' on a new line when done):");
+      const lines = [];
+      let line;
+      while ((line = (await ask(""))) !== "END") {
+        lines.push(line);
+      }
+      codeSample = lines.join("\n");
+    }
 
     const { error } = await supabase.from("questions").insert({
       lecture_id: lecture.id,
       title,
       description,
-      starter_code: starterCode || "",
+      starter_code: starterCode,
+      code_sample: codeSample,
+      question_type: questionType,
       order_index: nextOrder + i,
     });
 
     if (error) {
       console.error(`Failed to add question: ${error.message}`);
     } else {
-      console.log(`Question "${title}" added!`);
+      console.log(`Question "${title}" (${questionType}) added!`);
     }
   }
 

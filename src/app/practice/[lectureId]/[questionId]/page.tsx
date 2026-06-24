@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Play, Send, Loader2, CheckCircle, Lightbulb, Keyboard, Trophy, Sparkles, X } from "lucide-react";
+import { ArrowLeft, Play, Send, Loader2, CheckCircle, Lightbulb, Trophy, X, BrainCircuit } from "lucide-react";
 import CodeEditor from "@/components/CodeEditor";
 import OutputPanel from "@/components/OutputPanel";
 import AvatarDisplay from "@/components/AvatarDisplay";
@@ -41,9 +41,11 @@ export default function PracticeQuestionPage() {
   const [userData, setUserData] = useState<{ username: string; avatar_url?: string | null } | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const [xpToast, setXpToast] = useState<{ xp: number; levelUp?: boolean; badges?: string[] } | null>(null);
+  const [predictedOutput, setPredictedOutput] = useState("");
 
   const lectureId = params.lectureId as string;
   const questionId = params.questionId as string;
+  const isDryRun = question?.question_type === "dry_run";
 
   useEffect(() => {
     (async () => {
@@ -52,14 +54,15 @@ export default function PracticeQuestionPage() {
       if (!user) { router.push(`/login?redirect=/practice/${lectureId}/${questionId}`); return; }
       setUserData(user);
 
-      // Record daily practice
       fetch("/api/gamification/record-daily", { method: "POST" }).catch(() => {});
 
       const qRes = await fetch(`/api/questions/${questionId}`);
       const qData = await qRes.json();
       if (qData.question) {
         setQuestion(qData.question);
-        setCode(qData.question.starter_code);
+        if (qData.question.question_type !== "dry_run") {
+          setCode(qData.question.starter_code);
+        }
       }
 
       const sRes = await fetch(`/api/submissions?question_id=${questionId}`);
@@ -67,8 +70,13 @@ export default function PracticeQuestionPage() {
       if (sData.submissions?.length > 0) setSubmitted(true);
 
       setLoading(false);
+
+      if (qData.question?.question_type !== "dry_run") {
+        loadPyodideRuntime();
+      } else {
+        setPyodideLoading(false);
+      }
     })();
-    loadPyodideRuntime();
   }, [questionId]);
 
   const loadPyodideRuntime = async () => {
@@ -90,7 +98,7 @@ export default function PracticeQuestionPage() {
   };
 
   const handleRun = useCallback(async () => {
-    if (!pyodide) return;
+    if (!pyodide || isDryRun) return;
     setRunning(true);
     setOutput("");
     setError("");
@@ -110,19 +118,22 @@ export default function PracticeQuestionPage() {
       }
     }
     setRunning(false);
-  }, [pyodide, code]);
+  }, [pyodide, code, isDryRun]);
 
   const handleSubmit = async () => {
     if (!question) return;
     setSubmitting(true);
+
+    const submitCode = isDryRun ? predictedOutput : code;
+    const submitOutput = isDryRun ? "" : output;
+
     const res = await fetch("/api/submissions", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ question_id: question.id, code, output }),
+      body: JSON.stringify({ question_id: question.id, code: submitCode, output: submitOutput }),
     });
     if (res.ok) setSubmitted(true);
 
-    // Award XP + check badges
     try {
       const gRes = await fetch("/api/gamification/submit", {
         method: "POST",
@@ -156,6 +167,7 @@ export default function PracticeQuestionPage() {
         <span className="text-gray-300">|</span>
         <span className="text-xs sm:text-sm font-medium text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full">Q{question.order_index}</span>
         <h1 className="text-xs sm:text-sm font-semibold text-gray-700 truncate">{question.title}</h1>
+        {isDryRun && <span className="text-[10px] font-bold text-purple-600 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded-full shrink-0">Dry Run</span>}
         <div className="ml-auto">
           <AvatarDisplay url={userData?.avatar_url} username={userData?.username || ""} size={28} />
         </div>
@@ -182,13 +194,17 @@ export default function PracticeQuestionPage() {
 
         <div className="flex-1 flex flex-col min-h-0 bg-[#1e1e1e]">
           <div className="flex items-center justify-between px-3 sm:px-4 py-2 bg-[#252526] border-b border-[#3c3c3c] shrink-0">
-            <span className="text-[11px] sm:text-xs font-medium text-gray-400 uppercase tracking-wider">code.py</span>
+            <span className="text-[11px] sm:text-xs font-medium text-gray-400 uppercase tracking-wider">
+              {isDryRun ? "code_sample.py" : "code.py"}
+            </span>
             <div className="flex items-center gap-1.5 sm:gap-2">
-              <button onClick={handleRun} disabled={running || pyodideLoading || !pyodide}
-                className="flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-green-600 hover:bg-green-500 disabled:bg-gray-600 text-white text-xs sm:text-sm font-semibold rounded-lg transition-all active:scale-95 touch-manipulation">
-                {running ? <Loader2 size={14} className="animate-spin" /> : <Play size={14} />}
-                Run
-              </button>
+              {!isDryRun && (
+                <button onClick={handleRun} disabled={running || pyodideLoading || !pyodide}
+                  className="flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-green-600 hover:bg-green-500 disabled:bg-gray-600 text-white text-xs sm:text-sm font-semibold rounded-lg transition-all active:scale-95 touch-manipulation">
+                  {running ? <Loader2 size={14} className="animate-spin" /> : <Play size={14} />}
+                  Run
+                </button>
+              )}
               <button onClick={handleSubmit} disabled={submitting || submitted}
                 className="flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:bg-gray-600 text-white text-xs sm:text-sm font-semibold rounded-lg transition-all active:scale-95 touch-manipulation">
                 {submitting ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
@@ -197,17 +213,43 @@ export default function PracticeQuestionPage() {
             </div>
           </div>
 
-          <div className="flex-1 lg:flex-[3] overflow-hidden min-h-[150px]">
-            <CodeEditor value={code} onChange={setCode} />
-          </div>
-
-          <div className="shrink-0 lg:flex-[2] border-t border-[#3c3c3c] overflow-hidden">
-            <OutputPanel output={output} error={error} running={running} />
-          </div>
+          {isDryRun ? (
+            <>
+              <div className="flex-[3] overflow-auto min-h-[150px] bg-[#1e1e1e]">
+                <pre className="p-4 sm:p-6 text-[13px] sm:text-[14px] font-mono text-green-300 overflow-x-auto whitespace-pre-wrap leading-relaxed">
+                  <code>{question.code_sample || "# No code sample provided"}</code>
+                </pre>
+              </div>
+              <div className="shrink-0 lg:flex-[2] border-t border-[#3c3c3c] flex flex-col bg-[#252526]">
+                <div className="px-4 py-2 bg-[#252526] border-b border-[#3c3c3c]">
+                  <span className="text-[11px] font-medium text-purple-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <BrainCircuit size={13} />
+                    Your Predicted Output
+                  </span>
+                </div>
+                <textarea
+                  value={predictedOutput}
+                  onChange={(e) => setPredictedOutput(e.target.value)}
+                  disabled={submitted}
+                  placeholder="Type what you think the code will output..."
+                  className="flex-1 w-full bg-[#1e1e1e] text-gray-200 text-[13px] sm:text-[14px] font-mono p-4 resize-none focus:outline-none border-0 disabled:opacity-50 placeholder-gray-500"
+                />
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="flex-1 lg:flex-[3] overflow-hidden min-h-[150px]">
+                <CodeEditor value={code} onChange={setCode} />
+              </div>
+              <div className="shrink-0 lg:flex-[2] border-t border-[#3c3c3c] overflow-hidden">
+                <OutputPanel output={output} error={error} running={running} />
+              </div>
+            </>
+          )}
         </div>
       </div>
 
-      {pyodideLoading && (
+      {!isDryRun && pyodideLoading && (
         <div className="fixed bottom-4 right-4 left-4 sm:left-auto bg-emerald-900 text-white text-xs sm:text-sm rounded-xl px-4 py-3 flex items-center gap-2 shadow-lg backdrop-blur-sm z-50">
           <Loader2 size={14} className="animate-spin shrink-0" />
           <span className="truncate">Loading Python runtime (~15MB first time)...</span>
@@ -224,7 +266,7 @@ export default function PracticeQuestionPage() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-extrabold text-gray-800">+{xpToast.xp} XP Earned!</p>
-              {xpToast.levelUp && <p className="text-xs font-bold text-amber-600">🎉 Level Up!</p>}
+              {xpToast.levelUp && <p className="text-xs font-bold text-amber-600">Level Up!</p>}
               {xpToast.badges && xpToast.badges.length > 0 && (
                 <p className="text-xs font-bold text-purple-600">New badge: {xpToast.badges.join(" ")}</p>
               )}
@@ -238,4 +280,3 @@ export default function PracticeQuestionPage() {
     </div>
   );
 }
-

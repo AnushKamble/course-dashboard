@@ -43,9 +43,16 @@ export default function QuestionCard({ question, lectureId, submission }: Props)
               <Code size={16} className="sm:w-[18px] sm:h-[18px]" />
             </div>
             <div className="min-w-0">
-              <h3 className="font-bold text-sm sm:text-base text-gray-800 mb-1 group-hover:text-emerald-700 transition-colors truncate">
-                {question.order_index}. {question.title}
-              </h3>
+              <div className="flex items-center gap-2 flex-wrap mb-1">
+                <h3 className="font-bold text-sm sm:text-base text-gray-800 group-hover:text-emerald-700 transition-colors truncate">
+                  {question.order_index}. {question.title}
+                </h3>
+                {question.question_type === "dry_run" ? (
+                  <span className="text-[10px] font-bold text-purple-600 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded-full shrink-0">📝 Dry Run</span>
+                ) : (
+                  <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full shrink-0">💻 Coding</span>
+                )}
+              </div>
               <p className="text-xs sm:text-sm text-gray-500 line-clamp-2">
                 {question.description}
               </p>
