@@ -2,10 +2,27 @@ import { createClient } from "@supabase/supabase-js";
 import readline from "readline";
 import dotenv from "dotenv";
 import { join, dirname } from "path";
+import { readFileSync } from "fs";
 import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: join(__dirname, "..", ".env.local") });
+
+function parseArgs(argv) {
+  const args = {};
+  for (let i = 2; i < argv.length; i++) {
+    if (argv[i].startsWith("--")) {
+      const key = argv[i].slice(2);
+      if (argv[i + 1] && !argv[i + 1].startsWith("--")) {
+        args[key] = argv[i + 1];
+        i++;
+      } else {
+        args[key] = true;
+      }
+    }
+  }
+  return args;
+}
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -17,6 +34,7 @@ function ask(query) {
 }
 
 async function main() {
+  const cliArgs = parseArgs(process.argv);
   console.log("\n=== Add Questions to Existing Lecture ===\n");
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -48,11 +66,15 @@ async function main() {
     console.log(`  ${l.order_index}. ${l.title} (${count || 0} questions)`);
   }
 
-  const choice = await ask("\nEnter lecture number to add questions to: ");
-  const lecture = lectures.find((l) => l.order_index === parseInt(choice));
-  if (!lecture) {
-    console.log("Invalid lecture number.");
-    process.exit(0);
+  let lecture;
+  if (cliArgs.lecture) {
+    lecture = lectures.find((l) => l.order_index === parseInt(cliArgs.lecture));
+    if (!lecture) { console.log("Invalid lecture number."); process.exit(0); }
+    console.log(`Selected: ${lecture.title}`);
+  } else {
+    const choice = await ask("\nEnter lecture number: ");
+    lecture = lectures.find((l) => l.order_index === parseInt(choice));
+    if (!lecture) { console.log("Invalid lecture number."); process.exit(0); }
   }
 
   const { data: existing } = await supabase
@@ -64,29 +86,60 @@ async function main() {
 
   let nextOrder = (existing && existing[0]?.order_index) ? existing[0].order_index + 1 : 1;
 
-  const countStr = await ask(`How many questions to add? (next order_index: ${nextOrder}): `);
+  const countStr = cliArgs.count || await ask(`How many questions to add? (next order_index: ${nextOrder}): `);
   const count = parseInt(countStr);
 
   for (let i = 0; i < count; i++) {
     console.log(`\n--- Question ${nextOrder + i} ---`);
-    const title = await ask("Question title: ");
-    const description = await ask("Description: ");
-    const qType = await ask("Question type? (coding/dry_run) [coding]: ");
-    const questionType = qType.trim() === "dry_run" ? "dry_run" : "coding";
+
+    const title = cliArgs.title || await ask("Question title: ");
+    const description = cliArgs.description || await ask("Description: ");
+
+    let questionType = "coding";
+    if (cliArgs.type) {
+      questionType = cliArgs.type === "dry_run" ? "dry_run" : "coding";
+      console.log(`Type: ${questionType}`);
+    } else {
+      const qType = await ask("Question type? (coding/dry_run) [coding]: ");
+      questionType = qType.trim() === "dry_run" ? "dry_run" : "coding";
+    }
 
     let starterCode = "";
     let codeSample = null;
 
     if (questionType === "coding") {
-      starterCode = await ask("Starter code (optional): ");
-    } else {
-      console.log("Enter the code sample (type 'END' on a new line when done):");
-      const lines = [];
-      let line;
-      while ((line = (await ask(""))) !== "END") {
-        lines.push(line);
+      if (cliArgs.starter) {
+        starterCode = cliArgs.starter;
+        console.log("Starter code provided via --starter");
+      } else if (cliArgs.file) {
+        try {
+          starterCode = readFileSync(cliArgs.file, "utf8");
+          console.log(`Starter code read from ${cliArgs.file}`);
+        } catch {
+          console.log("Could not read file, leaving starter code empty.");
+        }
+      } else {
+        starterCode = await ask("Starter code (optional): ");
       }
-      codeSample = lines.join("\n");
+    } else {
+      // dry_run
+      if (cliArgs.file) {
+        try {
+          codeSample = readFileSync(cliArgs.file, "utf8");
+          console.log(`Code sample read from ${cliArgs.file} (${codeSample.split("\n").length} lines)`);
+        } catch {
+          console.error(`Could not read file: ${cliArgs.file}`);
+          process.exit(1);
+        }
+      } else {
+        console.log("Enter code sample below. Type --- on a new line when done:");
+        const lines = [];
+        let line;
+        while ((line = (await ask(""))) !== "---") {
+          lines.push(line);
+        }
+        codeSample = lines.join("\n");
+      }
     }
 
     const { error } = await supabase.from("questions").insert({
@@ -100,13 +153,13 @@ async function main() {
     });
 
     if (error) {
-      console.error(`Failed to add question: ${error.message}`);
+      console.error(`Failed: ${error.message}`);
     } else {
-      console.log(`Question "${title}" (${questionType}) added!`);
+      console.log(`Added: "${title}" (${questionType})`);
     }
   }
 
-  console.log("\nDone! Questions are live on the site.");
+  console.log("\nDone! Questions are live.");
   rl.close();
 }
 
