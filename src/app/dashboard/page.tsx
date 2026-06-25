@@ -5,13 +5,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   LayoutDashboard, Code, CheckCircle, XCircle, Clock,
-  Loader2, ArrowRight, Sparkles, Trophy, Gamepad2, Flame,
+  Loader2, ArrowRight, Sparkles, Trophy, Gamepad2, Flame, BookOpen,
 } from "lucide-react";
 import { ProgressPieChart, ProgressBarChart } from "@/components/StudentProgressChart";
 import ProfilePhoto from "@/components/ProfilePhoto";
 import XPBar from "@/components/XPBar";
 import BadgeGrid from "@/components/BadgeGrid";
 import ConfettiOverlay from "@/components/ConfettiOverlay";
+import SubmissionModal from "@/components/SubmissionModal";
 
 export default function DashboardPage() {
   const [user, setUser] = useState<any>(null);
@@ -19,6 +20,9 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<any>(null);
   const [gamification, setGamification] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [lectures, setLectures] = useState<any[]>([]);
+  const [submissionsList, setSubmissionsList] = useState<any[]>([]);
+  const [selectedSub, setSelectedSub] = useState<any | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const [confettiType, setConfettiType] = useState<"levelup" | "badge" | "correct">("correct");
   const router = useRouter();
@@ -34,17 +38,21 @@ export default function DashboardPage() {
       // Record daily visit
       fetch("/api/gamification/record-daily", { method: "POST" }).catch(() => {});
 
-      const [questionsRes, subsRes, gamiRes] = await Promise.all([
+      const [questionsRes, subsRes, gamiRes, lecRes] = await Promise.all([
         fetch("/api/questions"),
         fetch("/api/submissions"),
         fetch("/api/gamification/profile"),
+        fetch("/api/lectures"),
       ]);
 
       const allQ = await questionsRes.json();
       const { submissions } = await subsRes.json();
       const gami = await gamiRes.json();
+      const lecData = await lecRes.json();
 
       setGamification(gami);
+      setSubmissionsList(submissions || []);
+      setLectures(lecData.lectures || []);
 
       const questions = allQ.questions || [];
       const attempted = submissions?.length || 0;
@@ -154,6 +162,83 @@ export default function DashboardPage() {
               <Sparkles size={18} /> Playground
             </Link>
           </div>
+
+          {/* Submission History */}
+          {submissionsList.length > 0 && lectures.length > 0 && (
+            <div className="mt-8 bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+              <div className="px-5 sm:px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-emerald-50/50 to-emerald-50/50">
+                <h3 className="font-bold text-gray-800 flex items-center gap-2">
+                  <BookOpen size={16} className="text-emerald-500" />
+                  Submission History
+                </h3>
+              </div>
+              {lectures.map((lecture: any) => {
+                const attemptedHere = submissionsList.filter((s: any) => {
+                  const q = s.questions;
+                  return q && q.lecture_id === lecture.id;
+                });
+                if (attemptedHere.length === 0) return null;
+                return (
+                  <div key={lecture.id} className="border-b border-gray-100 last:border-b-0">
+                    <div className="px-5 sm:px-6 py-3 bg-gradient-to-r from-emerald-50/30 to-emerald-50/30">
+                      <h4 className="text-sm font-extrabold text-emerald-700 flex items-center gap-2">
+                        <BookOpen size={14} className="text-emerald-500" />
+                        Lecture {lecture.order_index}: {lecture.title}
+                        <span className="text-[10px] font-medium text-gray-400 ml-auto">{attemptedHere.length} submissions</span>
+                      </h4>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead>
+                          <tr className="bg-gray-50">
+                            <th className="text-left px-5 sm:px-6 py-2 text-[10px] font-extrabold text-gray-500 uppercase tracking-wider">Question</th>
+                            <th className="text-center px-5 sm:px-6 py-2 text-[10px] font-extrabold text-gray-500 uppercase tracking-wider">Status</th>
+                            <th className="text-left px-5 sm:px-6 py-2 text-[10px] font-extrabold text-gray-500 uppercase tracking-wider">Submitted</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {attemptedHere
+                            .sort((a: any, b: any) => {
+                              const aOrder = a.questions?.order_index ?? 0;
+                              const bOrder = b.questions?.order_index ?? 0;
+                              return aOrder - bOrder;
+                            })
+                            .map((sub: any) => (
+                              <tr
+                                key={sub.id}
+                                onClick={() => setSelectedSub(sub)}
+                                className="border-b border-gray-50 cursor-pointer hover:bg-gradient-to-r hover:from-emerald-50/30 hover:to-emerald-50/30 transition-all"
+                              >
+                                <td className="px-5 sm:px-6 py-3">
+                                  <div className="flex items-center gap-2">
+                                    <Code size={13} className="text-gray-400" />
+                                    <span className="text-sm font-bold text-gray-800">
+                                      {sub.questions?.order_index}. {sub.questions?.title}
+                                    </span>
+                                  </div>
+                                </td>
+                                <td className="px-5 sm:px-6 py-3 text-center">
+                                  {sub.status === "correct" ? (
+                                    <span className="text-[10px] font-bold text-green-700 bg-green-100 px-2 py-1 rounded-full inline-flex items-center gap-1"><CheckCircle size={10} /> Correct</span>
+                                  ) : sub.status === "incorrect" ? (
+                                    <span className="text-[10px] font-bold text-red-700 bg-red-100 px-2 py-1 rounded-full inline-flex items-center gap-1"><XCircle size={10} /> Incorrect</span>
+                                  ) : (
+                                    <span className="text-[10px] font-bold text-orange-700 bg-orange-100 px-2 py-1 rounded-full inline-flex items-center gap-1"><Clock size={10} /> Pending</span>
+                                  )}
+                                </td>
+                                <td className="px-5 sm:px-6 py-3 text-xs text-gray-500">
+                                  {new Date(sub.submitted_at).toLocaleDateString()}
+                                </td>
+                              </tr>
+                            ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </>
       )}
 
@@ -166,6 +251,10 @@ export default function DashboardPage() {
       )}
 
       {showConfetti && <ConfettiOverlay fire={showConfetti} type={confettiType} />}
+
+      {selectedSub && (
+        <SubmissionModal submission={selectedSub} onClose={() => setSelectedSub(null)} />
+      )}
     </div>
   );
 }

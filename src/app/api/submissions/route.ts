@@ -35,7 +35,7 @@ export async function GET(request: Request) {
   const supabase = createAdminClient();
   let query = supabase
     .from("submissions")
-    .select("*, questions(title, description)")
+    .select("*, questions(id, title, description, order_index, lecture_id)")
     .eq("user_id", user.id);
 
   if (questionId) {

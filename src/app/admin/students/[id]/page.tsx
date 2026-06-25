@@ -17,9 +17,11 @@ export default async function StudentDetailPage({ params }: { params: Promise<{ 
 
   const { data: submissions } = await supabase
     .from("submissions")
-    .select("*, questions(title, description, order_index)")
+    .select("*, questions(id, title, description, order_index, lecture_id)")
     .eq("user_id", id)
     .order("submitted_at", { ascending: false });
+
+  const { data: lectures } = await supabase.from("lectures").select("*").order("order_index");
 
   const { data: allQuestions } = await supabase.from("questions").select("*").order("order_index");
 
@@ -36,7 +38,7 @@ export default async function StudentDetailPage({ params }: { params: Promise<{ 
         <ResetPasswordButton username={profile.username} />
       </div>
 
-      <StudentDetailClient submissions={submissions || []} allQuestions={allQuestions || []} />
+      <StudentDetailClient submissions={submissions || []} allQuestions={allQuestions || []} lectures={lectures || []} />
     </div>
   );
 }
