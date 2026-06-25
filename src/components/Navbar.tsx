@@ -10,6 +10,26 @@ export default function Navbar() {
   const [user, setUser] = useState<{ id: string; username: string; role: string; avatar_url?: string | null } | null>(null);
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [doubtCount, setDoubtCount] = useState(0);
+
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.user) setUser(data.user);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
+  // Fetch unread doubt count every 15s
+  useEffect(() => {
+    if (!user) return;
+    const fetchCount = () => fetch("/api/doubts/unread-count").then(r => r.json()).then(d => setDoubtCount(d.count || 0)).catch(() => {});
+    fetchCount();
+    const interval = setInterval(fetchCount, 15000);
+    return () => clearInterval(interval);
+  }, [user]);
 
   useEffect(() => {
     fetch("/api/auth/me")
@@ -47,7 +67,7 @@ export default function Navbar() {
             {user && <NavLink href="/playground" icon={<Sparkles size={15} />} label="Playground" />}
             {user && <NavLink href="/announcements" icon={<Megaphone size={15} />} label="Announcements" />}
             {user && <NavLink href="/leaderboard" icon={<Trophy size={15} />} label="Rankings" />}
-            {user && <NavLink href="/doubts" icon={<MessageCircle size={15} />} label="Doubts" />}
+            {user && <NavLink href="/doubts" icon={<MessageCircle size={15} />} label="Doubts" badge={doubtCount} />}
             {user?.role === "admin" && (
               <Link href="/admin" className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-yellow-200 hover:text-white hover:bg-white/15 transition-all">
                 <Shield size={15} />
@@ -101,7 +121,7 @@ export default function Navbar() {
             {user && <MobileNavLink href="/playground" icon={<Sparkles size={15} />} label="Playground" onClick={() => setMenuOpen(false)} />}
             {user && <MobileNavLink href="/announcements" icon={<Megaphone size={15} />} label="Announcements" onClick={() => setMenuOpen(false)} />}
             {user && <MobileNavLink href="/leaderboard" icon={<Trophy size={15} />} label="Rankings" onClick={() => setMenuOpen(false)} />}
-            {user && <MobileNavLink href="/doubts" icon={<MessageCircle size={15} />} label="Doubts" onClick={() => setMenuOpen(false)} />}
+            {user && <MobileNavLink href="/doubts" icon={<MessageCircle size={15} />} label={`Doubts${doubtCount > 0 ? ` (${doubtCount})` : ""}`} onClick={() => setMenuOpen(false)} />}
             {user?.role === "admin" && (
               <MobileNavLink href="/admin" icon={<Shield size={15} />} label="Admin" onClick={() => setMenuOpen(false)} />
             )}
@@ -127,11 +147,16 @@ export default function Navbar() {
   );
 }
 
-function NavLink({ href, icon, label }: { href: string; icon: React.ReactNode; label: string }) {
+function NavLink({ href, icon, label, badge }: { href: string; icon: React.ReactNode; label: string; badge?: number }) {
   return (
-    <Link href={href} className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-emerald-100 hover:text-white hover:bg-white/15 transition-all">
+    <Link href={href} className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-emerald-100 hover:text-white hover:bg-white/15 transition-all relative">
       {icon}
       {label}
+      {badge != null && badge > 0 && (
+        <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] h-[18px] flex items-center justify-center shadow-lg shadow-rose-500/40 animate-bounce-soft">
+          {badge > 99 ? "99+" : badge}
+        </span>
+      )}
     </Link>
   );
 }

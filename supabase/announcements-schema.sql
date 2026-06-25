@@ -50,3 +50,6 @@ CREATE TABLE IF NOT EXISTS public.doubt_messages (
   message TEXT NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Track when student last viewed a doubt (for unread badge)
+ALTER TABLE public.doubts ADD COLUMN IF NOT EXISTS last_student_viewed_at TIMESTAMPTZ;
