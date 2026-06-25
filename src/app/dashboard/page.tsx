@@ -22,6 +22,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [lectures, setLectures] = useState<any[]>([]);
   const [submissionsList, setSubmissionsList] = useState<any[]>([]);
+  const [allQuestions, setAllQuestions] = useState<any[]>([]);
   const [selectedSub, setSelectedSub] = useState<any | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const [confettiType, setConfettiType] = useState<"levelup" | "badge" | "correct">("correct");
@@ -53,6 +54,7 @@ export default function DashboardPage() {
       setGamification(gami);
       setSubmissionsList(submissions || []);
       setLectures(lecData.lectures || []);
+      setAllQuestions(allQ.questions || []);
 
       const questions = allQ.questions || [];
       const attempted = submissions?.length || 0;
@@ -163,28 +165,30 @@ export default function DashboardPage() {
             </Link>
           </div>
 
-          {/* Submission History */}
-          {submissionsList.length > 0 && lectures.length > 0 && (
+          {/* Submission History - All Questions */}
+          {lectures.length > 0 && (
             <div className="mt-8 bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
               <div className="px-5 sm:px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-emerald-50/50 to-emerald-50/50">
                 <h3 className="font-bold text-gray-800 flex items-center gap-2">
                   <BookOpen size={16} className="text-emerald-500" />
-                  Submission History
+                  All Questions
                 </h3>
               </div>
               {lectures.map((lecture: any) => {
-                const attemptedHere = submissionsList.filter((s: any) => {
-                  const q = s.questions;
-                  return q && q.lecture_id === lecture.id;
-                });
-                if (attemptedHere.length === 0) return null;
+                const lectureQuestions = allQuestions.filter((q: any) => q.lecture_id === lecture.id);
+                if (lectureQuestions.length === 0) return null;
+                const attemptedHere = lectureQuestions.filter((q: any) =>
+                  submissionsList.some((s: any) => s.question_id === q.id)
+                );
                 return (
                   <div key={lecture.id} className="border-b border-gray-100 last:border-b-0">
                     <div className="px-5 sm:px-6 py-3 bg-gradient-to-r from-emerald-50/30 to-emerald-50/30">
                       <h4 className="text-sm font-extrabold text-emerald-700 flex items-center gap-2">
                         <BookOpen size={14} className="text-emerald-500" />
                         Lecture {lecture.order_index}: {lecture.title}
-                        <span className="text-[10px] font-medium text-gray-400 ml-auto">{attemptedHere.length} submissions</span>
+                        <span className="text-[10px] font-medium text-gray-400 ml-auto">
+                          {attemptedHere.length}/{lectureQuestions.length} &middot; {lectureQuestions.length} question{lectureQuestions.length !== 1 ? "s" : ""}
+                        </span>
                       </h4>
                     </div>
                     <div className="overflow-x-auto">
@@ -197,40 +201,47 @@ export default function DashboardPage() {
                           </tr>
                         </thead>
                         <tbody>
-                          {attemptedHere
-                            .sort((a: any, b: any) => {
-                              const aOrder = a.questions?.order_index ?? 0;
-                              const bOrder = b.questions?.order_index ?? 0;
-                              return aOrder - bOrder;
-                            })
-                            .map((sub: any) => (
+                          {lectureQuestions.map((q: any) => {
+                            const latestSub = submissionsList
+                              .filter((s: any) => s.question_id === q.id)
+                              .sort((a: any, b: any) => new Date(b.submitted_at).getTime() - new Date(a.submitted_at).getTime())[0];
+                            return (
                               <tr
-                                key={sub.id}
-                                onClick={() => setSelectedSub(sub)}
-                                className="border-b border-gray-50 cursor-pointer hover:bg-gradient-to-r hover:from-emerald-50/30 hover:to-emerald-50/30 transition-all"
+                                key={q.id}
+                                onClick={() => latestSub && setSelectedSub(latestSub)}
+                                className={`border-b border-gray-50 transition-all ${
+                                  latestSub
+                                    ? "cursor-pointer hover:bg-gradient-to-r hover:from-emerald-50/30 hover:to-emerald-50/30"
+                                    : ""
+                                }`}
                               >
                                 <td className="px-5 sm:px-6 py-3">
                                   <div className="flex items-center gap-2">
                                     <Code size={13} className="text-gray-400" />
                                     <span className="text-sm font-bold text-gray-800">
-                                      {sub.questions?.order_index}. {sub.questions?.title}
+                                      {q.order_index}. {q.title}
                                     </span>
                                   </div>
                                 </td>
                                 <td className="px-5 sm:px-6 py-3 text-center">
-                                  {sub.status === "correct" ? (
+                                  {!latestSub ? (
+                                    <span className="text-[10px] font-bold text-gray-300 bg-gray-100 px-2 py-1 rounded-full">Not Attempted</span>
+                                  ) : latestSub.status === "correct" ? (
                                     <span className="text-[10px] font-bold text-green-700 bg-green-100 px-2 py-1 rounded-full inline-flex items-center gap-1"><CheckCircle size={10} /> Correct</span>
-                                  ) : sub.status === "incorrect" ? (
+                                  ) : latestSub.status === "incorrect" ? (
                                     <span className="text-[10px] font-bold text-red-700 bg-red-100 px-2 py-1 rounded-full inline-flex items-center gap-1"><XCircle size={10} /> Incorrect</span>
                                   ) : (
                                     <span className="text-[10px] font-bold text-orange-700 bg-orange-100 px-2 py-1 rounded-full inline-flex items-center gap-1"><Clock size={10} /> Pending</span>
                                   )}
                                 </td>
                                 <td className="px-5 sm:px-6 py-3 text-xs text-gray-500">
-                                  {new Date(sub.submitted_at).toLocaleDateString()}
+                                  {latestSub
+                                    ? new Date(latestSub.submitted_at).toLocaleDateString()
+                                    : "-"}
                                 </td>
                               </tr>
-                            ))}
+                            );
+                          })}
                         </tbody>
                       </table>
                     </div>

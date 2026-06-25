@@ -107,7 +107,7 @@ export function StudentDetailClient({
                   <BookOpen size={14} className="text-emerald-500" />
                   Lecture {lecture.order_index}: {lecture.title}
                   <span className="text-[10px] font-medium text-gray-400 ml-auto">
-                    {attemptedHere.length}/{lectureQuestions.length} attempted
+                    {attemptedHere.length}/{lectureQuestions.length} &middot; {lectureQuestions.length} question{lectureQuestions.length !== 1 ? "s" : ""}
                   </span>
                 </h4>
               </div>

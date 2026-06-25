@@ -46,6 +46,8 @@ export default function PracticeQuestionPage() {
   const [doubtText, setDoubtText] = useState("");
   const [doubtSent, setDoubtSent] = useState(false);
   const [doubtSending, setDoubtSending] = useState(false);
+  const [lectureQuestions, setLectureQuestions] = useState<Question[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(-1);
 
   const lectureId = params.lectureId as string;
   const questionId = params.questionId as string;
@@ -85,6 +87,12 @@ export default function PracticeQuestionPage() {
       const sRes = await fetch(`/api/submissions?question_id=${questionId}`);
       const sData = await sRes.json();
       if (sData.submissions?.length > 0) setSubmitted(true);
+
+      const lqRes = await fetch(`/api/questions?lecture_id=${lectureId}`);
+      const lqData = await lqRes.json();
+      const allLQ: Question[] = lqData.questions || [];
+      setLectureQuestions(allLQ);
+      setCurrentIndex(allLQ.findIndex((q: Question) => q.id === questionId));
 
       setLoading(false);
 
@@ -185,6 +193,33 @@ export default function PracticeQuestionPage() {
         <span className="text-xs sm:text-sm font-medium text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full">Q{question.order_index}</span>
         <h1 className="text-xs sm:text-sm font-semibold text-gray-700 truncate">{question.title}</h1>
         {isDryRun && <span className="text-[10px] font-bold text-purple-600 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded-full shrink-0">Dry Run</span>}
+        {lectureQuestions.length > 0 && (
+          <div className="flex items-center gap-1 ml-2">
+            {currentIndex > 0 ? (
+              <Link
+                href={`/practice/${lectureId}/${lectureQuestions[currentIndex - 1].id}`}
+                className="flex items-center gap-1 px-2 py-1 text-[11px] font-bold text-gray-500 bg-gray-100 hover:bg-gray-200 rounded-lg transition-all"
+              >
+                ◀ Prev
+              </Link>
+            ) : (
+              <span className="flex items-center gap-1 px-2 py-1 text-[11px] font-bold text-gray-300 bg-gray-50 rounded-lg cursor-not-allowed">◀ Prev</span>
+            )}
+            {currentIndex >= 0 && (
+              <span className="text-[10px] font-medium text-gray-400 px-1">{currentIndex + 1}/{lectureQuestions.length}</span>
+            )}
+            {currentIndex < lectureQuestions.length - 1 ? (
+              <Link
+                href={`/practice/${lectureId}/${lectureQuestions[currentIndex + 1].id}`}
+                className="flex items-center gap-1 px-2 py-1 text-[11px] font-bold text-gray-500 bg-gray-100 hover:bg-gray-200 rounded-lg transition-all"
+              >
+                Next ▶
+              </Link>
+            ) : (
+              <span className="flex items-center gap-1 px-2 py-1 text-[11px] font-bold text-gray-300 bg-gray-50 rounded-lg cursor-not-allowed">Next ▶</span>
+            )}
+          </div>
+        )}
         <div className="ml-auto">
           <AvatarDisplay url={userData?.avatar_url} username={userData?.username || ""} size={28} />
         </div>
