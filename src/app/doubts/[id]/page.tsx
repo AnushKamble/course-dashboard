@@ -3,7 +3,8 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Send, Loader2, CheckCircle, Clock, Code, User, ShieldCheck, MessageCircle } from "lucide-react";
+import { ArrowLeft, Send, Loader2, CheckCircle, Clock, Code, User, MessageCircle, Phone, Video, MoreHorizontal } from "lucide-react";
+import AvatarDisplay from "@/components/AvatarDisplay";
 
 export default function DoubtConversationPage() {
   const { id } = useParams<{ id: string }>();
@@ -15,6 +16,7 @@ export default function DoubtConversationPage() {
   const [newMessage, setNewMessage] = useState("");
   const [sending, setSending] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetch("/api/auth/me").then(r => r.json()).then(d => {
@@ -28,7 +30,14 @@ export default function DoubtConversationPage() {
     fetchMessages();
   }, [id]);
 
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
+  // Poll for new messages every 3 seconds
+  useEffect(() => {
+    if (loading) return;
+    const interval = setInterval(fetchMessages, 3000);
+    return () => clearInterval(interval);
+  }, [loading]);
+
+  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
 
   const fetchMessages = async () => {
     const res = await fetch(`/api/doubts/${id}/messages`);
@@ -71,116 +80,138 @@ export default function DoubtConversationPage() {
 
   const isAdmin = user?.role === "admin";
   const isStudentOwner = user?.id === doubt.user_id;
+  const otherPerson = isAdmin ? doubt.profiles?.username : "Instructor";
+  const otherAvatar = isAdmin ? doubt.profiles?.avatar_url : null;
+
+  // Group messages by date
+  const grouped: { date: string; msgs: typeof messages }[] = [];
+  for (const m of messages) {
+    const dateKey = new Date(m.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+    const last = grouped[grouped.length - 1];
+    if (last && last.date === dateKey) {
+      last.msgs.push(m);
+    } else {
+      grouped.push({ date: dateKey, msgs: [m] });
+    }
+  }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-      <Link href={isAdmin ? "/admin/doubts" : "/doubts"} className="inline-flex items-center gap-1.5 text-sm font-semibold text-purple-600 hover:text-purple-800 mb-4 transition-colors">
-        <ArrowLeft size={16} /> Back to {isAdmin ? "All Doubts" : "My Doubts"}
-      </Link>
+    <div className="h-[calc(100vh-4rem)] flex flex-col bg-[#efeae2]">
+      {/* Chat header — WhatsApp style */}
+      <div className="bg-[#075e54] text-white px-4 sm:px-6 py-3 flex items-center gap-3 shrink-0 shadow-lg z-10">
+        <Link href={isAdmin ? "/admin/doubts" : "/doubts"} className="p-1 -ml-1 hover:bg-white/20 rounded-full transition-colors">
+          <ArrowLeft size={20} />
+        </Link>
+        <AvatarDisplay url={otherAvatar} username={otherPerson || "?"} size={36} />
+        <div className="flex-1 min-w-0">
+          <p className="font-semibold text-sm truncate">{otherPerson}</p>
+          <p className="text-[11px] text-emerald-200">{doubt.questions?.title || "General Doubt"}</p>
+        </div>
+        <div className="flex items-center gap-1">
+          {isAdmin && (
+            <button onClick={toggleResolved} className={`px-3 py-1 rounded-full text-[11px] font-bold transition-all active:scale-95 ${doubt.resolved ? "bg-white/20 text-white" : "bg-emerald-500 text-white"}`}>
+              {doubt.resolved ? "Reopen" : "Resolve"}
+            </button>
+          )}
+        </div>
+      </div>
 
-      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-        {/* Header */}
-        <div className="p-4 sm:p-6 border-b border-gray-100">
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <div className="flex items-center gap-2 flex-wrap mb-1">
-                <h1 className="text-base sm:text-lg font-bold text-gray-800">{doubt.questions?.title || "General Doubt"}</h1>
-                {doubt.resolved ? (
-                  <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full flex items-center gap-1">
-                    <CheckCircle size={10} /> Resolved
-                  </span>
-                ) : (
-                  <span className="text-[11px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full flex items-center gap-1">
-                    <Clock size={10} /> Open
-                  </span>
-                )}
-              </div>
-              {isAdmin && (
-                <p className="text-xs text-gray-500 flex items-center gap-1.5">
-                  <User size={12} /> {doubt.profiles?.username || "Unknown"}
-                </p>
-              )}
-              <p className="text-xs text-gray-400 mt-0.5">{new Date(doubt.created_at).toLocaleString("en-IN")}</p>
-            </div>
-            {isAdmin && (
-              <button onClick={toggleResolved} className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all active:scale-95 shrink-0 ${doubt.resolved ? "bg-amber-50 text-amber-700 hover:bg-amber-100" : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"}`}>
-                {doubt.resolved ? "Reopen" : "Mark Resolved"}
-              </button>
-            )}
-          </div>
-          <div className="mt-3 bg-purple-50 rounded-xl p-3 text-sm text-gray-700 leading-relaxed">
-            {doubt.question_text}
+      {/* Original doubt bubble */}
+      <div className="px-4 sm:px-6 pt-3 pb-1 bg-[#efeae2]">
+        <div className="max-w-[85%] sm:max-w-[65%] mx-auto">
+          <div className="bg-white rounded-lg rounded-tl-none shadow-sm p-3 text-sm text-gray-700 leading-relaxed relative">
+            <p>{doubt.question_text}</p>
+            <p className="text-[10px] text-gray-400 mt-1.5 text-right">{new Date(doubt.created_at).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}</p>
+            {doubt.resolved && <div className="absolute -top-2 -right-2 bg-emerald-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold shadow">Resolved</div>}
           </div>
           {doubt.code && (
-            <details className="mt-3 group">
-              <summary className="flex items-center gap-1.5 text-xs font-bold text-gray-400 hover:text-purple-600 cursor-pointer list-none transition-colors">
-                <Code size={13} />
-                {doubt.questions?.question_type === "dry_run" ? "Predicted Output" : "Code & Output"}
+            <details className="mt-1 group">
+              <summary className="text-[11px] font-semibold text-gray-500 hover:text-purple-700 cursor-pointer list-none text-center transition-colors">
+                {doubt.questions?.question_type === "dry_run" ? "View predicted output" : "View code & output"}
               </summary>
-              <div className="mt-2 bg-[#1e1e1e] rounded-xl overflow-hidden">
-                <pre className="p-3 text-[13px] font-mono text-green-300 overflow-x-auto whitespace-pre-wrap max-h-48 leading-relaxed">{doubt.code}</pre>
+              <div className="mt-1.5 bg-[#1e1e1e] rounded-lg overflow-hidden shadow">
+                <pre className="p-3 text-[12px] font-mono text-green-300 overflow-x-auto whitespace-pre-wrap max-h-36 leading-relaxed">{doubt.code}</pre>
                 {doubt.output && (
                   <>
-                    <div className="border-t border-gray-700 px-3 py-1 bg-gray-900"><span className="text-[10px] font-bold text-gray-400 uppercase">Output</span></div>
-                    <pre className="px-3 pb-3 text-[13px] font-mono text-gray-300 whitespace-pre-wrap leading-relaxed">{doubt.output}</pre>
+                    <div className="border-t border-gray-700 px-3 py-1 bg-gray-900"><span className="text-[9px] font-bold text-gray-400 uppercase">Output</span></div>
+                    <pre className="px-3 pb-3 text-[12px] font-mono text-gray-300 whitespace-pre-wrap leading-relaxed">{doubt.output}</pre>
                   </>
                 )}
               </div>
             </details>
           )}
         </div>
+      </div>
 
-        {/* Messages */}
-        <div className="h-[400px] overflow-y-auto p-4 sm:p-6 space-y-4 bg-gray-50/50">
-          {messages.length === 0 && (
-            <div className="text-center py-12">
-              <MessageCircle size={32} className="mx-auto text-gray-300 mb-2" />
-              <p className="text-sm text-gray-400">No replies yet. {isAdmin ? "Reply to this doubt." : "Waiting for the instructor."}</p>
+      {/* Messages area — WhatsApp chat style */}
+      <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-2 space-y-1 bg-[#efeae2]" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")"}}>
+        {messages.length === 0 && (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center bg-white/80 backdrop-blur rounded-2xl px-6 py-8 shadow-sm max-w-xs">
+              <MessageCircle size={36} className="mx-auto text-gray-300 mb-2" />
+              <p className="text-sm text-gray-500 font-medium">No messages yet</p>
+              <p className="text-xs text-gray-400 mt-1">{isAdmin ? "Tap reply below to respond." : "Waiting for the instructor to reply."}</p>
             </div>
-          )}
-          {messages.map((m) => {
-            const isMine = m.sender_id === user?.id;
-            return (
-              <div key={m.id} className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
-                <div className={`max-w-[85%] sm:max-w-[70%] ${isMine ? "order-1" : "order-1"}`}>
-                  <div className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${isMine ? "bg-gradient-to-r from-purple-500 to-violet-500 text-white rounded-br-md" : "bg-white border border-gray-200 text-gray-700 rounded-bl-md shadow-sm"}`}>
-                    <p>{m.message}</p>
-                  </div>
-                  <div className={`flex items-center gap-1.5 mt-1 ${isMine ? "justify-end" : "justify-start"}`}>
-                    <span className="text-[10px] text-gray-400">{new Date(m.created_at).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}</span>
-                    {!isMine && m.profiles?.username && (
-                      <span className="text-[10px] font-medium text-purple-500">{m.profiles.username}</span>
-                    )}
-                    {isMine && <span className="text-[10px] text-gray-400">You</span>}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-          <div ref={bottomRef} />
-        </div>
+          </div>
+        )}
 
-        {/* Reply box */}
-        {(isAdmin || isStudentOwner) && (
-          <div className="border-t border-gray-100 p-3 sm:p-4 flex items-center gap-3">
+        {grouped.map((group, gi) => (
+          <div key={gi}>
+            <div className="flex justify-center my-3">
+              <span className="text-[11px] text-gray-500 bg-white/70 backdrop-blur px-3 py-1 rounded-full shadow-sm">{group.date}</span>
+            </div>
+            {group.msgs.map((m, mi) => {
+              const isMine = m.sender_id === user?.id;
+              const showAvatar = !isMine && (mi === 0 || group.msgs[mi - 1]?.sender_id !== m.sender_id);
+              const time = new Date(m.created_at).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
+              return (
+                <div key={m.id} className={`flex items-end gap-1.5 mb-1 ${isMine ? "justify-end" : "justify-start"}`}>
+                  {!isMine && (
+                    <div className={`w-7 h-7 rounded-full mb-1 shrink-0 transition-opacity ${showAvatar ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
+                      <AvatarDisplay url={otherAvatar} username={otherPerson || "?"} size={28} />
+                    </div>
+                  )}
+                  <div className={`max-w-[80%] sm:max-w-[60%] ${isMine ? "mr-0" : "ml-0"}`}>
+                    <div className={`px-3 py-2 text-sm leading-relaxed shadow-sm ${isMine ? "bg-[#d9fdd3] text-gray-800 rounded-lg rounded-tr-sm" : "bg-white text-gray-800 rounded-lg rounded-tl-sm"}`}>
+                      <p className="whitespace-pre-wrap break-words">{m.message}</p>
+                      <p className={`text-[10px] mt-1 ${isMine ? "text-gray-400 text-right" : "text-gray-400 text-right"}`}>{time}</p>
+                    </div>
+                  </div>
+                  {isMine && (
+                    <div className="w-7 h-7 rounded-full mb-1 shrink-0">
+                      <AvatarDisplay url={user?.avatar_url} username={user?.username || "You"} size={28} />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        ))}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Reply bar — WhatsApp style */}
+      {(isAdmin || isStudentOwner) && (
+        <div className="bg-[#f0f2f5] px-4 sm:px-6 py-2.5 flex items-center gap-3 shrink-0 border-t border-gray-200/50">
+          <div className="flex-1 flex items-center bg-white rounded-2xl border border-gray-200 shadow-sm">
             <textarea
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={isAdmin ? "Reply to this doubt..." : "Add a follow-up..."}
+              placeholder={isAdmin ? "Type a reply..." : "Type a message..."}
               rows={1}
-              className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-700 resize-none focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all"
+              className="flex-1 bg-transparent px-4 py-2.5 text-sm text-gray-700 resize-none focus:outline-none rounded-2xl max-h-20"
             />
-            <button
-              onClick={sendMessage}
-              disabled={!newMessage.trim() || sending}
-              className="p-3 rounded-xl bg-gradient-to-r from-purple-500 to-violet-500 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg transition-all active:scale-95 shrink-0"
-            >
-              {sending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
-            </button>
           </div>
-        )}
-      </div>
+          <button
+            onClick={sendMessage}
+            disabled={!newMessage.trim() || sending}
+            className="w-10 h-10 rounded-full bg-[#075e54] text-white disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#0b7a6e] transition-all active:scale-95 shrink-0 flex items-center justify-center shadow-sm"
+          >
+            {sending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

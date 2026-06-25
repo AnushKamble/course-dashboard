@@ -49,7 +49,7 @@ export default async function AdminOverview() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-5 mb-8">
         {cards.map((card) => (
           <Link key={card.title} href={card.href}
             className={`${card.gradient} rounded-2xl p-5 sm:p-6 shadow-lg text-white card-hover`}>
