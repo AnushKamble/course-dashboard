@@ -1,7 +1,7 @@
 import { createAdminClient } from "@/lib/supabase-admin";
 import { getSessionUser } from "@/lib/auth";
 import Link from "next/link";
-import { Shield, Users, FileText, CheckSquare, ArrowRight, Sparkles } from "lucide-react";
+import { Shield, Users, FileText, CheckSquare, ArrowRight, Sparkles, MessageCircle } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -26,11 +26,17 @@ export default async function AdminOverview() {
     .select("*", { count: "exact", head: true })
     .eq("status", "submitted");
 
+  const { count: pendingDoubts } = await supabase
+    .from("doubts")
+    .select("*", { count: "exact", head: true })
+    .eq("resolved", false);
+
   const cards = [
     { title: "Students", value: totalStudents || 0, icon: Users, gradient: "bg-gradient-to-br from-blue-500 to-cyan-500", href: "/admin/students" },
     { title: "Lectures", value: totalLectures || 0, icon: FileText, gradient: "bg-gradient-to-br from-violet-500 to-purple-500", href: "/" },
     { title: "Questions", value: totalQuestions || 0, icon: FileText, gradient: "bg-gradient-to-br from-orange-500 to-amber-500", href: "/" },
     { title: "Pending Reviews", value: pendingSubmissions || 0, icon: CheckSquare, gradient: "bg-gradient-to-br from-rose-500 to-pink-500", href: "/admin/submissions" },
+    { title: "Unresolved Doubts", value: pendingDoubts || 0, icon: MessageCircle, gradient: "bg-gradient-to-br from-purple-500 to-violet-500", href: "/admin/doubts" },
   ];
 
   return (
@@ -54,7 +60,7 @@ export default async function AdminOverview() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
         <Link href="/admin/submissions"
           className="bg-white rounded-2xl p-5 sm:p-6 shadow-lg border border-gray-100 card-hover flex items-center justify-between group">
           <div>
@@ -63,6 +69,15 @@ export default async function AdminOverview() {
             <p className="text-sm text-gray-500 mt-1">{pendingSubmissions || 0} pending reviews</p>
           </div>
           <ArrowRight size={20} className="text-gray-300 group-hover:text-emerald-500 group-hover:translate-x-1 transition-all" />
+        </Link>
+        <Link href="/admin/doubts"
+          className="bg-white rounded-2xl p-5 sm:p-6 shadow-lg border border-gray-100 card-hover flex items-center justify-between group">
+          <div>
+            <div className="bg-gradient-to-br from-purple-500 to-violet-500 rounded-xl p-2.5 text-white inline-flex mb-3 shadow-lg shadow-purple-500/20"><MessageCircle size={18} /></div>
+            <p className="font-extrabold text-gray-800">Student Doubts</p>
+            <p className="text-sm text-gray-500 mt-1">{pendingDoubts || 0} unresolved</p>
+          </div>
+          <ArrowRight size={20} className="text-gray-300 group-hover:text-purple-500 group-hover:translate-x-1 transition-all" />
         </Link>
         <Link href="/admin/students"
           className="bg-white rounded-2xl p-5 sm:p-6 shadow-lg border border-gray-100 card-hover flex items-center justify-between group">

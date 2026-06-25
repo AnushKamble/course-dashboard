@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Play, Send, Loader2, CheckCircle, Lightbulb, Trophy, X, BrainCircuit } from "lucide-react";
+import { ArrowLeft, Play, Send, Loader2, CheckCircle, Lightbulb, Trophy, X, BrainCircuit, HelpCircle, MessageCircle } from "lucide-react";
 import CodeEditor from "@/components/CodeEditor";
 import OutputPanel from "@/components/OutputPanel";
 import AvatarDisplay from "@/components/AvatarDisplay";
@@ -42,10 +42,27 @@ export default function PracticeQuestionPage() {
   const [showConfetti, setShowConfetti] = useState(false);
   const [xpToast, setXpToast] = useState<{ xp: number; levelUp?: boolean; badges?: string[] } | null>(null);
   const [predictedOutput, setPredictedOutput] = useState("");
+  const [doubtOpen, setDoubtOpen] = useState(false);
+  const [doubtText, setDoubtText] = useState("");
+  const [doubtSent, setDoubtSent] = useState(false);
+  const [doubtSending, setDoubtSending] = useState(false);
 
   const lectureId = params.lectureId as string;
   const questionId = params.questionId as string;
   const isDryRun = question?.question_type === "dry_run";
+
+  const sendDoubt = async () => {
+    if (!question || !doubtText.trim()) return;
+    setDoubtSending(true);
+    await fetch("/api/doubts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question_id: question.id, code, output, question_text: doubtText }),
+    });
+    setDoubtSent(true);
+    setDoubtSending(false);
+    setTimeout(() => { setDoubtOpen(false); setDoubtSent(false); setDoubtText(""); }, 1500);
+  };
 
   useEffect(() => {
     (async () => {
@@ -205,6 +222,11 @@ export default function PracticeQuestionPage() {
                   Run
                 </button>
               )}
+              <button onClick={() => setDoubtOpen(true)} disabled={submitted}
+                className="flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-purple-600 hover:bg-purple-500 disabled:bg-gray-600 text-white text-xs sm:text-sm font-semibold rounded-lg transition-all active:scale-95 touch-manipulation">
+                <HelpCircle size={14} />
+                Doubt?
+              </button>
               <button onClick={handleSubmit} disabled={submitting || submitted}
                 className="flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:bg-gray-600 text-white text-xs sm:text-sm font-semibold rounded-lg transition-all active:scale-95 touch-manipulation">
                 {submitting ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
@@ -274,6 +296,50 @@ export default function PracticeQuestionPage() {
             <button onClick={() => setXpToast(null)} className="p-1 hover:bg-gray-100 rounded-full transition-colors shrink-0">
               <X size={14} className="text-gray-400" />
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Doubt Modal */}
+      {doubtOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" onClick={() => { if (!doubtSent) setDoubtOpen(false); }}>
+          <div className="bg-white rounded-2xl shadow-2xl p-5 sm:p-6 w-full max-w-lg animate-slide-up" onClick={(e) => e.stopPropagation()}>
+            {doubtSent ? (
+              <div className="text-center py-8">
+                <div className="w-14 h-14 rounded-full bg-purple-100 flex items-center justify-center mx-auto mb-4">
+                  <MessageCircle className="w-7 h-7 text-purple-600" />
+                </div>
+                <h3 className="text-lg font-extrabold text-gray-800 mb-1">Doubt Sent!</h3>
+                <p className="text-sm text-gray-500">Your doubt and code have been sent to the instructor.</p>
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <HelpCircle size={18} className="text-purple-500" />
+                    <h3 className="text-lg font-bold text-gray-800">Ask a Doubt</h3>
+                  </div>
+                  <button onClick={() => setDoubtOpen(false)} className="p-1.5 rounded-xl hover:bg-gray-100 text-gray-400 transition-all">
+                    <X size={18} />
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500 mb-3">Your current code and output will be attached automatically.</p>
+                <textarea
+                  value={doubtText}
+                  onChange={(e) => setDoubtText(e.target.value)}
+                  rows={4}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all resize-none"
+                  placeholder="Describe your doubt..."
+                />
+                <button
+                  onClick={sendDoubt}
+                  disabled={!doubtText.trim() || doubtSending}
+                  className="mt-4 w-full py-3 rounded-xl bg-gradient-to-r from-purple-500 to-violet-500 text-white font-bold text-sm hover:shadow-lg hover:shadow-purple-300/50 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {doubtSending ? <Loader2 size={16} className="animate-spin mx-auto" /> : "Send Doubt"}
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { BookOpen, LogOut, LayoutDashboard, Shield, User, Sparkles, Trophy, Flame, Megaphone } from "lucide-react";
+import { BookOpen, LogOut, LayoutDashboard, Shield, User, Sparkles, Trophy, Flame, Megaphone, MessageCircle } from "lucide-react";
 import ProfilePhoto from "./ProfilePhoto";
 import StreakBadge from "./StreakBadge";
 
@@ -47,6 +47,7 @@ export default function Navbar() {
             {user && <NavLink href="/playground" icon={<Sparkles size={15} />} label="Playground" />}
             {user && <NavLink href="/announcements" icon={<Megaphone size={15} />} label="Announcements" />}
             {user && <NavLink href="/leaderboard" icon={<Trophy size={15} />} label="Rankings" />}
+            {user && <NavLink href="/doubts" icon={<MessageCircle size={15} />} label="Doubts" />}
             {user?.role === "admin" && (
               <Link href="/admin" className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-yellow-200 hover:text-white hover:bg-white/15 transition-all">
                 <Shield size={15} />
@@ -100,6 +101,7 @@ export default function Navbar() {
             {user && <MobileNavLink href="/playground" icon={<Sparkles size={15} />} label="Playground" onClick={() => setMenuOpen(false)} />}
             {user && <MobileNavLink href="/announcements" icon={<Megaphone size={15} />} label="Announcements" onClick={() => setMenuOpen(false)} />}
             {user && <MobileNavLink href="/leaderboard" icon={<Trophy size={15} />} label="Rankings" onClick={() => setMenuOpen(false)} />}
+            {user && <MobileNavLink href="/doubts" icon={<MessageCircle size={15} />} label="Doubts" onClick={() => setMenuOpen(false)} />}
             {user?.role === "admin" && (
               <MobileNavLink href="/admin" icon={<Shield size={15} />} label="Admin" onClick={() => setMenuOpen(false)} />
             )}

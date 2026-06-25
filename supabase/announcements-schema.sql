@@ -30,3 +30,23 @@ ALTER TABLE public.submissions ADD COLUMN IF NOT EXISTS xp_awarded BOOLEAN DEFAU
 -- Question types: coding (editor + Pyodide) vs dry_run (code sample + predicted output)
 ALTER TABLE public.questions ADD COLUMN IF NOT EXISTS question_type TEXT DEFAULT 'coding' CHECK (question_type IN ('coding', 'dry_run'));
 ALTER TABLE public.questions ADD COLUMN IF NOT EXISTS code_sample TEXT;
+
+-- Doubts / messaging
+CREATE TABLE IF NOT EXISTS public.doubts (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  question_id UUID REFERENCES public.questions(id) ON DELETE SET NULL,
+  user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  code TEXT,
+  output TEXT,
+  question_text TEXT NOT NULL,
+  resolved BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS public.doubt_messages (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  doubt_id UUID NOT NULL REFERENCES public.doubts(id) ON DELETE CASCADE,
+  sender_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  message TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
