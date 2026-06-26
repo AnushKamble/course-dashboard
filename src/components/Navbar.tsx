@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { BookOpen, LogOut, LayoutDashboard, Shield, User, Sparkles, Trophy, Flame, Megaphone, MessageCircle } from "lucide-react";
+import { BookOpen, LogOut, LayoutDashboard, Shield, User, Sparkles, Trophy, Flame, Megaphone, MessageCircle, FileText } from "lucide-react";
 import ProfilePhoto from "./ProfilePhoto";
 import StreakBadge from "./StreakBadge";
 
@@ -64,7 +64,8 @@ export default function Navbar() {
           <div className="hidden sm:flex items-center gap-1">
             <NavLink href="/" icon={<BookOpen size={15} />} label="Lectures" />
             {user && <NavLink href="/dashboard" icon={<LayoutDashboard size={15} />} label="Dashboard" />}
-            {user && <NavLink href="/playground" icon={<Sparkles size={15} />} label="Playground" />}
+            {user && user.role !== "admin" && <NavLink href="/playground" icon={<Sparkles size={15} />} label="Playground" />}
+            {user && <NavLink href="/report" icon={<FileText size={15} />} label="Report" />}
             {user && <NavLink href="/announcements" icon={<Megaphone size={15} />} label="Announcements" />}
             {user && <NavLink href="/leaderboard" icon={<Trophy size={15} />} label="Rankings" />}
             {user && <NavLink href="/doubts" icon={<MessageCircle size={15} />} label="Doubts" badge={doubtCount} />}
@@ -118,7 +119,8 @@ export default function Navbar() {
           <div className="sm:hidden pb-3 border-t border-white/20 mt-2 pt-3 space-y-1 animate-slide-up">
             <MobileNavLink href="/" icon={<BookOpen size={15} />} label="Lectures" onClick={() => setMenuOpen(false)} />
             {user && <MobileNavLink href="/dashboard" icon={<LayoutDashboard size={15} />} label="Dashboard" onClick={() => setMenuOpen(false)} />}
-            {user && <MobileNavLink href="/playground" icon={<Sparkles size={15} />} label="Playground" onClick={() => setMenuOpen(false)} />}
+            {user && user.role !== "admin" && <MobileNavLink href="/playground" icon={<Sparkles size={15} />} label="Playground" onClick={() => setMenuOpen(false)} />}
+            {user && <MobileNavLink href="/report" icon={<FileText size={15} />} label="Report" onClick={() => setMenuOpen(false)} />}
             {user && <MobileNavLink href="/announcements" icon={<Megaphone size={15} />} label="Announcements" onClick={() => setMenuOpen(false)} />}
             {user && <MobileNavLink href="/leaderboard" icon={<Trophy size={15} />} label="Rankings" onClick={() => setMenuOpen(false)} />}
             {user && <MobileNavLink href="/doubts" icon={<MessageCircle size={15} />} label={`Doubts${doubtCount > 0 ? ` (${doubtCount})` : ""}`} onClick={() => setMenuOpen(false)} />}
