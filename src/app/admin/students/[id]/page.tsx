@@ -1,7 +1,7 @@
 import { createAdminClient } from "@/lib/supabase-admin";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, User } from "lucide-react";
+import { ArrowLeft, User, FileText } from "lucide-react";
 import { StudentDetailClient } from "./client";
 import ResetPasswordButton from "@/components/ResetPasswordButton";
 import AvatarDisplay from "@/components/AvatarDisplay";
@@ -35,7 +35,13 @@ export default async function StudentDetailPage({ params }: { params: Promise<{ 
           <h1 className="text-xl sm:text-2xl font-extrabold text-gray-900">{profile.username || "Unnamed"}</h1>
           <p className="text-xs sm:text-sm text-gray-500">Joined {new Date(profile.created_at).toLocaleDateString()}</p>
         </div>
-        <ResetPasswordButton username={profile.username} />
+        <div className="flex items-center gap-2">
+          <Link href={`/admin/students/${id}/report`} className="inline-flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-full text-xs font-bold hover:shadow-lg transition-all active:scale-95 shadow-md">
+            <FileText size={14} />
+            Report
+          </Link>
+          <ResetPasswordButton username={profile.username} />
+        </div>
       </div>
 
       <StudentDetailClient submissions={submissions || []} allQuestions={allQuestions || []} lectures={lectures || []} />

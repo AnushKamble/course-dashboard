@@ -1,6 +1,6 @@
 import { createAdminClient } from "@/lib/supabase-admin";
 import Link from "next/link";
-import { ArrowLeft, Users, ChevronRight, CheckCircle, XCircle, Clock, BookOpen, Activity } from "lucide-react";
+import { ArrowLeft, Users, ChevronRight, CheckCircle, XCircle, Clock, BookOpen, Activity, FileText } from "lucide-react";
 import ResetPasswordButton from "@/components/ResetPasswordButton";
 import AvatarDisplay from "@/components/AvatarDisplay";
 
@@ -147,6 +147,9 @@ export default async function AdminStudents() {
                       <div className="flex items-center gap-2">
                         <Link href={`/admin/students/${student.id}`} className="inline-flex items-center gap-1 text-emerald-600 hover:text-emerald-800 text-xs font-bold transition-colors">
                           View <ChevronRight size={12} />
+                        </Link>
+                        <Link href={`/admin/students/${student.id}/report`} className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 hover:text-blue-800 transition-colors">
+                          <FileText size={11} />Report
                         </Link>
                         <ResetPasswordButton username={student.username} />
                       </div>

@@ -2,9 +2,17 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { getSessionUser } from "@/lib/auth";
 
-export async function GET() {
+export async function GET(request: Request) {
   const user = await getSessionUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { searchParams } = new URL(request.url);
+  const targetUserId = searchParams.get("user_id");
+
+  // Only admin can view other users' profiles
+  const profileId = targetUserId && targetUserId !== user.id
+    ? (user.role === "admin" ? targetUserId : user.id)
+    : user.id;
 
   const supabase = createAdminClient();
 
@@ -12,7 +20,7 @@ export async function GET() {
   const { data, error } = await supabase
     .from("profiles")
     .select("xp, level, streak_count, last_practice_date, theme, avatar_url")
-    .eq("id", user.id)
+    .eq("id", profileId)
     .single();
 
   if (data) profile = data;
@@ -21,7 +29,7 @@ export async function GET() {
   let allBadges: any[] = [];
 
   try {
-    const { data: b } = await supabase.from("user_badges").select("*, badges(*)").eq("user_id", user.id);
+    const { data: b } = await supabase.from("user_badges").select("*, badges(*)").eq("user_id", profileId);
     if (b) badges = b;
   } catch {}
 

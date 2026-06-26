@@ -31,12 +31,15 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url);
   const questionId = searchParams.get("question_id");
+  const adminUserId = searchParams.get("admin_user_id");
 
   const supabase = createAdminClient();
+  const targetUserId = adminUserId && user.role === "admin" ? adminUserId : user.id;
+
   let query = supabase
     .from("submissions")
     .select("*, questions(id, title, description, order_index, lecture_id)")
-    .eq("user_id", user.id);
+    .eq("user_id", targetUserId);
 
   if (questionId) {
     query = query.eq("question_id", questionId);
