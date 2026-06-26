@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   LayoutDashboard, Code, CheckCircle, XCircle, Clock,
-  Loader2, ArrowRight, Sparkles, Trophy, Gamepad2, Flame, BookOpen,
+  Loader2, ArrowRight, Sparkles, Trophy, Gamepad2, Flame, BookOpen, FileText,
 } from "lucide-react";
 import { ProgressPieChart, ProgressBarChart } from "@/components/StudentProgressChart";
 import ProfilePhoto from "@/components/ProfilePhoto";
@@ -115,6 +115,10 @@ export default function DashboardPage() {
               <Link href="/leaderboard" className="flex items-center gap-2 px-3 py-2.5 bg-gray-50 hover:bg-amber-50 rounded-xl text-sm font-semibold text-gray-700 hover:text-amber-700 transition-all sm:hidden">
                 <Trophy size={15} className="text-amber-500" />
                 Leaderboard
+              </Link>
+              <Link href="/report" target="_blank" className="flex items-center gap-2 px-3 py-2.5 bg-gray-50 hover:bg-emerald-50 rounded-xl text-sm font-semibold text-gray-700 hover:text-emerald-700 transition-all">
+                <FileText size={15} className="text-emerald-500" />
+                Download Report
               </Link>
               <div className="flex items-center gap-2 px-3 py-2.5 bg-gray-50 rounded-xl text-sm font-semibold text-gray-700">
                 <Flame size={15} className="text-orange-500" />

@@ -6,10 +6,26 @@ import UserGreeting from "@/components/UserGreeting";
 
 export const dynamic = "force-dynamic";
 
+function buildProgressMap(submissions: any[]): Map<string, number> {
+  const map = new Map<string, Set<string>>();
+  for (const s of submissions) {
+    const lid = (s as any).questions?.lecture_id;
+    if (!lid) continue;
+    if (!map.has(lid)) map.set(lid, new Set());
+    map.get(lid)!.add(s.question_id);
+  }
+  const result = new Map<string, number>();
+  for (const [lid, set] of map) result.set(lid, set.size);
+  return result;
+}
+
 export default async function Home() {
   const supabase = createAdminClient();
   const user = await getSessionUser();
   let profile: { avatar_url?: string | null } | null = null;
+  let progressMap = new Map<string, number>();
+  let questionCounts = new Map<string, number>();
+
   if (user) {
     const { data } = await supabase
       .from("profiles")
@@ -17,7 +33,23 @@ export default async function Home() {
       .eq("id", user.id)
       .single();
     profile = data;
+
+    const { data: subs } = await supabase
+      .from("submissions")
+      .select("question_id, questions!inner(lecture_id)")
+      .eq("user_id", user.id);
+
+    progressMap = buildProgressMap(subs || []);
   }
+
+  const { data: allQuestions } = await supabase
+    .from("questions")
+    .select("lecture_id");
+
+  for (const q of allQuestions || []) {
+    questionCounts.set(q.lecture_id, (questionCounts.get(q.lecture_id) || 0) + 1);
+  }
+
   const { data: lectures } = await supabase
     .from("lectures")
     .select("*")
@@ -108,9 +140,13 @@ export default async function Home() {
 
         {lectures && lectures.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-            {lectures.map((lecture, idx) => (
-              <LectureCard key={lecture.id} lecture={lecture} index={idx} />
-            ))}
+            {lectures.map((lecture, idx) => {
+              const total = questionCounts.get(lecture.id) || 0;
+              const attempted = progressMap.get(lecture.id) || 0;
+              return (
+                <LectureCard key={lecture.id} lecture={lecture} index={idx} progress={{ attempted, total }} />
+              );
+            })}
           </div>
         ) : (
           <div className="text-center py-16 sm:py-20 bg-white/80 backdrop-blur-sm rounded-3xl border-2 border-dashed border-purple-200 shadow-lg shadow-purple-500/5">

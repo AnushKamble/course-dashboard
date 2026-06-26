@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FileText, ArrowRight, Sparkles } from "lucide-react";
+import { FileText, ArrowRight, Sparkles, CheckCircle } from "lucide-react";
 import type { Lecture } from "@/types";
 
 const cardGradients = [
@@ -20,10 +20,11 @@ const gradientTexts = [
   "from-cyan-500 to-emerald-500",
 ];
 
-export default function LectureCard({ lecture, index }: { lecture: Lecture; index: number }) {
+export default function LectureCard({ lecture, index, progress }: { lecture: Lecture; index: number; progress?: { attempted: number; total: number } }) {
   const gradient = cardGradients[index % cardGradients.length];
   const emoji = lectureEmojis[index % lectureEmojis.length];
   const textGrad = gradientTexts[index % gradientTexts.length];
+  const pct = progress && progress.total > 0 ? Math.round((progress.attempted / progress.total) * 100) : 0;
 
   return (
     <div className="group bg-white rounded-2xl shadow-md border border-gray-100 card-hover overflow-hidden relative">
@@ -47,9 +48,29 @@ export default function LectureCard({ lecture, index }: { lecture: Lecture; inde
           {lecture.title}
         </h3>
 
-        <p className="text-xs sm:text-sm text-gray-500 mb-5 line-clamp-2">
+        <p className="text-xs sm:text-sm text-gray-500 mb-3 line-clamp-2">
           {lecture.description || "No description yet."}
         </p>
+
+        {progress && progress.total > 0 && (
+          <div className="mb-4">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-[10px] font-bold text-gray-400 flex items-center gap-1">
+                <CheckCircle size={10} className={pct === 100 ? "text-emerald-500" : "text-gray-300"} />
+                {progress.attempted}/{progress.total} completed
+              </span>
+              <span className={`text-[10px] font-extrabold ${pct === 100 ? "text-emerald-600" : "text-blue-600"}`}>{pct}%</span>
+            </div>
+            <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all duration-500 ${
+                  pct === 100 ? "bg-gradient-to-r from-emerald-500 to-green-500" : "bg-gradient-to-r from-blue-500 to-cyan-500"
+                }`}
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+          </div>
+        )}
 
         <div className="flex items-center gap-2">
           {lecture.pdf_url && (
