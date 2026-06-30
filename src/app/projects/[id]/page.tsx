@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Play, Send, Loader2, Lightbulb, CheckCircle, ChevronLeft, ChevronRight, Eye, EyeOff, FileText } from "lucide-react";
+import { ArrowLeft, Play, Send, Loader2, Lightbulb, CheckCircle, XCircle, ChevronLeft, ChevronRight, Eye, EyeOff, FileText } from "lucide-react";
 import CodeEditor from "@/components/CodeEditor";
 import OutputPanel from "@/components/OutputPanel";
 import { projects } from "@/data/projects";
@@ -43,6 +43,7 @@ export default function ProjectTutorialPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState("");
   const [showNextWarning, setShowNextWarning] = useState(false);
 
   useEffect(() => {
@@ -115,12 +116,22 @@ export default function ProjectTutorialPage() {
   const handleCompleteProject = async () => {
     if (!project) return;
     setSubmitting(true);
-    const res = await fetch("/api/projects/submit", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ project_id: project.id, code }),
-    });
-    if (res.ok) setSubmitted(true);
+    setSubmitError("");
+    try {
+      const res = await fetch("/api/projects/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ project_id: project.id, code }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setSubmitted(true);
+      } else {
+        setSubmitError(data.error || "Failed to submit. Check the database table exists.");
+      }
+    } catch (e: any) {
+      setSubmitError(e.message || "Network error");
+    }
     setSubmitting(false);
   };
 
@@ -187,11 +198,16 @@ export default function ProjectTutorialPage() {
                 ))}
               </div>
               {isLastStep ? (
-                <button onClick={handleCompleteProject} disabled={!ranOnce || submitting || submitted}
-                  className="flex items-center gap-1 px-3 py-2 text-xs font-bold text-white bg-gradient-to-r from-emerald-500 to-green-600 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-all">
-                  {submitting ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
-                  {submitted ? "Submitted!" : "Complete Project"}
-                </button>
+                <div className="flex flex-col items-end gap-1">
+                  <button onClick={handleCompleteProject} disabled={!ranOnce || submitting || submitted}
+                    className="flex items-center gap-1 px-3 py-2 text-xs font-bold text-white bg-gradient-to-r from-emerald-500 to-green-600 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-all">
+                    {submitting ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+                    {submitted ? "Submitted!" : "Complete Project"}
+                  </button>
+                  {!ranOnce && !submitted && (
+                    <span className="text-[10px] text-gray-400">Click <strong>Run</strong> above first</span>
+                  )}
+                </div>
               ) : (
                 <button onClick={() => goToStep(currentStep + 1)}
                   className="flex items-center gap-1 px-3 py-2 text-xs font-bold text-white bg-gradient-to-r from-emerald-500 to-green-600 hover:shadow-lg rounded-xl transition-all">
@@ -200,6 +216,15 @@ export default function ProjectTutorialPage() {
               )}
             </div>
 
+            {submitError && (
+              <div className="mt-4 bg-red-50 border border-red-200 rounded-xl p-3 flex items-start gap-2">
+                <XCircle size={16} className="text-red-500 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-xs text-red-700 font-bold">Submission failed</p>
+                  <p className="text-[10px] text-red-600">{submitError}</p>
+                </div>
+              </div>
+            )}
             {submitted && (
               <div className="mt-4 bg-green-50 border border-green-200 rounded-xl p-3 flex items-start gap-2">
                 <CheckCircle size={16} className="text-green-500 shrink-0 mt-0.5" />
