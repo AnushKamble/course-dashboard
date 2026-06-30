@@ -112,6 +112,10 @@ export default function DashboardPage() {
                 <Sparkles size={15} className="text-purple-500" />
                 Playground
               </Link>
+              <Link href="/projects" className="flex items-center gap-2 px-3 py-2.5 bg-gray-50 hover:bg-pink-50 rounded-xl text-sm font-semibold text-gray-700 hover:text-pink-700 transition-all">
+                <Code size={15} className="text-pink-500" />
+                Projects
+              </Link>
               <Link href="/leaderboard" className="flex items-center gap-2 px-3 py-2.5 bg-gray-50 hover:bg-amber-50 rounded-xl text-sm font-semibold text-gray-700 hover:text-amber-700 transition-all sm:hidden">
                 <Trophy size={15} className="text-amber-500" />
                 Leaderboard

@@ -3,6 +3,7 @@ import LectureCard from "@/components/LectureCard";
 import { Sparkles, Code, Rocket, BookOpen, Star, Zap } from "lucide-react";
 import { getSessionUser } from "@/lib/auth";
 import UserGreeting from "@/components/UserGreeting";
+import ProjectDiscoverModal from "@/components/ProjectDiscoverModal";
 
 export const dynamic = "force-dynamic";
 
@@ -120,6 +121,7 @@ export default async function Home() {
       {user && profile && (
         <UserGreeting username={user.username} avatarUrl={profile?.avatar_url} />
       )}
+      {user && <ProjectDiscoverModal />}
 
       {/* Lectures section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 sm:pb-20">

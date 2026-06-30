@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { BookOpen, LogOut, LayoutDashboard, Shield, User, Sparkles, Trophy, Flame, Megaphone, MessageCircle, FileText } from "lucide-react";
+import { BookOpen, LogOut, LayoutDashboard, Shield, User, Sparkles, Trophy, Flame, Megaphone, MessageCircle, FileText, Code } from "lucide-react";
 import ProfilePhoto from "./ProfilePhoto";
 import StreakBadge from "./StreakBadge";
 
@@ -31,16 +31,6 @@ export default function Navbar() {
     return () => clearInterval(interval);
   }, [user]);
 
-  useEffect(() => {
-    fetch("/api/auth/me")
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.user) setUser(data.user);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
-
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
     setUser(null);
@@ -63,6 +53,7 @@ export default function Navbar() {
           {/* Desktop nav */}
           <div className="hidden sm:flex items-center gap-1">
             <NavLink href="/" icon={<BookOpen size={15} />} label="Lectures" />
+            {user && <NavLink href="/projects" icon={<Code size={15} />} label="Projects" />}
             {user && <NavLink href="/dashboard" icon={<LayoutDashboard size={15} />} label="Dashboard" />}
             {user && user.role !== "admin" && <NavLink href="/playground" icon={<Sparkles size={15} />} label="Playground" />}
             {user && <NavLink href="/report" icon={<FileText size={15} />} label="Report" />}
@@ -118,6 +109,7 @@ export default function Navbar() {
         {menuOpen && (
           <div className="sm:hidden pb-3 border-t border-white/20 mt-2 pt-3 space-y-1 animate-slide-up">
             <MobileNavLink href="/" icon={<BookOpen size={15} />} label="Lectures" onClick={() => setMenuOpen(false)} />
+            {user && <MobileNavLink href="/projects" icon={<Code size={15} />} label="Projects" onClick={() => setMenuOpen(false)} />}
             {user && <MobileNavLink href="/dashboard" icon={<LayoutDashboard size={15} />} label="Dashboard" onClick={() => setMenuOpen(false)} />}
             {user && user.role !== "admin" && <MobileNavLink href="/playground" icon={<Sparkles size={15} />} label="Playground" onClick={() => setMenuOpen(false)} />}
             {user && <MobileNavLink href="/report" icon={<FileText size={15} />} label="Report" onClick={() => setMenuOpen(false)} />}
