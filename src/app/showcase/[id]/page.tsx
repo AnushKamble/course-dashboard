@@ -3,8 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Play, Loader2, Eye, EyeOff, FileText, CheckCircle, Sparkles } from "lucide-react";
-import CodeEditor from "@/components/CodeEditor";
+import { ArrowLeft, Play, Loader2, FileText, CheckCircle, Sparkles } from "lucide-react";
 import CodeSpotlight from "@/components/CodeSpotlight";
 import TourCard from "@/components/TourCard";
 import ShowcaseCanvas from "@/components/ShowcaseCanvas";
@@ -75,27 +74,21 @@ export default function ShowcaseTutorialPage() {
     setRunning(true);
 
     try {
-      const canvasEl = document.getElementById("showcase-canvas");
-      if (canvasEl) canvasEl.remove();
-
-      const helperRes = await fetch("/canvas_helper.py");
-      const helperCode = await helperRes.text();
+      const container = document.getElementById("canvas-container");
+      if (container) container.innerHTML = "";
 
       pyodide.setStdout({ batched: (text: string) => {} });
       pyodide.setStderr({ batched: (text: string) => {} });
 
+      const helperRes = await fetch("/canvas_helper.py");
+      const helperCode = await helperRes.text();
       const fullCode = helperCode + "\n\n" + project.fullCode;
       await pyodide.runPythonAsync(fullCode);
     } catch (e: any) {
-      const canvasEl = document.getElementById("showcase-canvas");
-      if (canvasEl) canvasEl.remove();
-      setTimeout(() => {
-        const container = document.getElementById("canvas-container");
-        const errDiv = document.createElement("div");
-        errDiv.className = "text-red-400 text-xs text-center p-4";
-        errDiv.textContent = "Error: " + (e.message || "Something went wrong");
-        if (container) container.appendChild(errDiv);
-      }, 100);
+      const container = document.getElementById("canvas-container");
+      if (container) {
+        container.innerHTML = `<div style="color:#f87171;font-size:12px;text-align:center;padding:16px;">Error: ${(e.message || "Something went wrong").replace(/</g, "&lt;")}</div>`;
+      }
     }
     setRunning(false);
   }, [pyodide, project]);
