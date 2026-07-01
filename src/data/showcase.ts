@@ -25,9 +25,7 @@ export const showcaseProjects: ShowcaseProject[] = [
     description: "Turn your mouse into a paintbrush! Every click draws a colorful circle. Watch how just a few lines of Python can create an interactive drawing app.",
     difficulty: "Easy",
     runHint: "Click anywhere on the canvas to draw!",
-    fullCode: `from canvas_helper import *
-
-create_canvas(400, 400)
+    fullCode: `create_canvas(400, 400)
 
 def draw(x, y):
     fill(random_color())
@@ -37,14 +35,9 @@ on_click(draw)
 start_anim(lambda: None)`,
     steps: [
       {
-        title: "Import the Tools",
-        code: `from canvas_helper import *`,
-        explanation: `This imports all the drawing functions like create_canvas(), fill(), circle(), and on_click(). It gives us the power to draw on the screen!`,
-      },
-      {
         title: "Create the Canvas",
         code: `create_canvas(400, 400)`,
-        explanation: `This creates a 400x400 pixel canvas on the screen. Think of it like setting up a blank sheet of paper for us to draw on.`,
+        explanation: `This creates a 400x400 pixel canvas on the screen. The canvas_helper tools (create_canvas, fill, circle, etc.) are pre-loaded for you — no import needed! Think of it like setting up a blank sheet of paper.`,
       },
       {
         title: "Define the Draw Function",
@@ -71,6 +64,11 @@ start_anim(lambda: None)`,
         code: `start_anim(lambda: None)`,
         explanation: `This keeps the program alive so it doesn't exit immediately. Without this, the program would run once and stop before you could click anything!`,
       },
+      {
+        title: "Change the Circle Size",
+        code: `    circle(x, y, 25)`,
+        explanation: `Try changing 25 to a bigger number like 50 for bigger circles, or 10 for smaller ones. The third number is the radius — the distance from center to edge. Experiment!`,
+      },
     ],
   },
   {
@@ -81,9 +79,7 @@ start_anim(lambda: None)`,
     description: "A ball bounces off the walls forever. Change the speed, color, or size and see what happens instantly. This is how all video game animations work!",
     difficulty: "Easy",
     runHint: "Just watch — the ball bounces automatically!",
-    fullCode: `from canvas_helper import *
-
-create_canvas(400, 400)
+    fullCode: `create_canvas(400, 400)
 
 x = 200
 y = 200
@@ -160,9 +156,7 @@ speed_y = 3`,
     description: "A simple Flappy Bird clone! Press the Spacebar to make the bird flap and try to fly through the pipes. See how gravity, collision, and scoring work in a real game.",
     difficulty: "Medium",
     runHint: "Press SPACE to flap! Avoid the pipes!",
-    fullCode: `from canvas_helper import *
-
-create_canvas(400, 500)
+    fullCode: `create_canvas(400, 500)
 
 bird_y = 250
 gravity = 5
@@ -223,15 +217,17 @@ on_key_press(flap)
 start_anim(update)`,
     steps: [
       {
-        title: "Setup Game Variables",
-        code: `bird_y = 250
+        title: "Setup Canvas & Game Variables",
+        code: `create_canvas(400, 500)
+
+bird_y = 250
 gravity = 5
 pipe_x = 400
 pipe_gap = 150
 gap_y = 200
 score = 0
 game_running = True`,
-        explanation: `These variables control everything: bird_y = bird's position, gravity = how fast it falls, pipe_x = where the pipe is, pipe_gap = the hole size, gap_y = the hole position. score tracks your points and game_running tells us if the game is active.`,
+        explanation: `Creates a 400x500 game canvas. Then sets up all the game variables: bird_y = where the bird is, gravity = how fast it falls, pipe_x and gap_y = where the pipe obstacle is, score = your points, game_running = whether the game is still going.`,
       },
       {
         title: "The Flap Function",
