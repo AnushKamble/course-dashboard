@@ -1,0 +1,38 @@
+Lecture 11: Nested For Loop Dry Run — Answers
+=============================================
+
+Q1: Rectangle of Stars
+----------------------
+****
+****
+****
+
+
+Q2: Number Triangle
+-------------------
+1
+12
+123
+1234
+12345
+
+
+Q3: Multiplication Grid
+-----------------------
+1 2 3
+2 4 6
+3 6 9
+
+
+Q4: Reverse Number Triangle
+---------------------------
+12345
+1234
+123
+12
+1
+
+
+Q5: Sum in Nested Loop
+----------------------
+20

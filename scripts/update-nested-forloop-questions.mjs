@@ -53,15 +53,26 @@ print(total)`,
 ];
 
 async function main() {
+  // Find lecture with order_index 11
   const { data: lec, error: e1 } = await supabase
     .from("lectures")
-    .insert({ title: "Nested For Loop Dry Run", description: "Practice dry running nested for loops — understand how inner and outer loops interact", order_index: 11 })
-    .select()
+    .select("id")
+    .eq("order_index", 11)
     .single();
 
-  if (e1) { console.error("Lecture error:", e1.message); process.exit(1); }
-  console.log(`Lecture created: "${lec.title}" (ID: ${lec.id})`);
+  if (e1) { console.error("Lecture not found:", e1.message); process.exit(1); }
+  console.log(`Found lecture: ${lec.id}`);
 
+  // Delete existing questions
+  const { error: delErr } = await supabase
+    .from("questions")
+    .delete()
+    .eq("lecture_id", lec.id);
+
+  if (delErr) { console.error("Delete failed:", delErr.message); process.exit(1); }
+  console.log("Old questions deleted");
+
+  // Insert new questions
   for (let i = 0; i < questions.length; i++) {
     const q = questions[i];
     const { error: e2 } = await supabase.from("questions").insert({
@@ -77,7 +88,7 @@ async function main() {
     else console.log(`Q${i + 1}: "${q.title}" added`);
   }
 
-  console.log("\nDone! All 5 questions are live.");
+  console.log("\nDone! Questions updated.");
 }
 
 main().catch(console.error);
