@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Loader2, Sparkles, Code, ChevronRight } from "lucide-react";
+import { Loader2, Sparkles, Code, ChevronRight, Eye } from "lucide-react";
 import { projects } from "@/data/projects";
+import { showcaseProjects } from "@/data/showcase";
 
 export default function ProjectsPage() {
   const router = useRouter();
@@ -33,6 +34,55 @@ export default function ProjectsPage() {
           <h1 className="text-xl sm:text-2xl font-extrabold text-gray-900">Projects 🚀</h1>
           <p className="text-xs sm:text-sm text-gray-500">Build fun projects and show off your skills!</p>
         </div>
+      </div>
+
+      {/* Interactive Showcase */}
+      <div className="mb-8">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl p-2 text-white shadow-lg shadow-orange-500/20">
+            <Sparkles size={16} />
+          </div>
+          <h2 className="text-base font-extrabold text-gray-800">Interactive Showcase</h2>
+          <span className="text-[10px] font-bold text-orange-700 bg-orange-100 px-2 py-0.5 rounded-full">Click. Watch. Learn.</span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+          {showcaseProjects.map((project) => (
+            <Link
+              key={project.id}
+              href={`/showcase/${project.id}`}
+              className="group bg-white rounded-2xl shadow-md border border-yellow-100 hover:border-yellow-300 card-hover overflow-hidden relative block"
+            >
+              <div className="h-24 bg-gradient-to-br from-yellow-400 via-orange-400 to-pink-400 flex items-center justify-center text-4xl group-hover:scale-105 transition-transform">
+                {project.emoji}
+              </div>
+              <div className="p-4">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-gradient-to-r from-yellow-200 to-orange-200 text-orange-800">
+                    🎮 Interactive
+                  </span>
+                  <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
+                    project.difficulty === "Easy" ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"
+                  }`}>
+                    {project.difficulty}
+                  </span>
+                </div>
+                <h3 className="text-sm font-extrabold text-gray-800 group-hover:text-orange-600 transition-colors">{project.title}</h3>
+                <p className="text-[11px] text-gray-500 mt-1 line-clamp-1">{project.hook}</p>
+                <div className="flex items-center gap-1 text-orange-600 text-[11px] font-bold mt-2 group-hover:gap-2 transition-all">
+                  <Eye size={12} /> Explore <ChevronRight size={12} />
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      {/* Step-by-Step Projects */}
+      <div className="flex items-center gap-2 mb-4">
+        <div className="bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl p-2 text-white shadow-lg shadow-purple-500/20">
+          <Code size={16} />
+        </div>
+        <h2 className="text-base font-extrabold text-gray-800">Step-by-Step Projects</h2>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">

@@ -54,6 +54,7 @@ export default function Navbar() {
           <div className="hidden sm:flex items-center gap-1">
             <NavLink href="/" icon={<BookOpen size={15} />} label="Lectures" />
             {user && <NavLink href="/projects" icon={<Code size={15} />} label="Projects" />}
+            {user && <NavLink href="/showcase" icon={<Sparkles size={15} />} label="Showcase" />}
             {user && <NavLink href="/dashboard" icon={<LayoutDashboard size={15} />} label="Dashboard" />}
             {user && user.role !== "admin" && <NavLink href="/playground" icon={<Sparkles size={15} />} label="Playground" />}
             {user && <NavLink href="/report" icon={<FileText size={15} />} label="Report" />}
@@ -110,6 +111,7 @@ export default function Navbar() {
           <div className="sm:hidden pb-3 border-t border-white/20 mt-2 pt-3 space-y-1 animate-slide-up">
             <MobileNavLink href="/" icon={<BookOpen size={15} />} label="Lectures" onClick={() => setMenuOpen(false)} />
             {user && <MobileNavLink href="/projects" icon={<Code size={15} />} label="Projects" onClick={() => setMenuOpen(false)} />}
+            {user && <MobileNavLink href="/showcase" icon={<Sparkles size={15} />} label="Showcase" onClick={() => setMenuOpen(false)} />}
             {user && <MobileNavLink href="/dashboard" icon={<LayoutDashboard size={15} />} label="Dashboard" onClick={() => setMenuOpen(false)} />}
             {user && user.role !== "admin" && <MobileNavLink href="/playground" icon={<Sparkles size={15} />} label="Playground" onClick={() => setMenuOpen(false)} />}
             {user && <MobileNavLink href="/report" icon={<FileText size={15} />} label="Report" onClick={() => setMenuOpen(false)} />}
