@@ -13,14 +13,109 @@ declare global {
   interface Window { loadPyodide: (config: any) => Promise<any>; }
 }
 
-const STDIN_WRAPPER = `
-import builtins as __builtins
-__original_input = __builtins.input
-def __input_wrapper(prompt=""):
+const CANVAS_HELPER = `
+from js import document, window
+import random
+import math
+
+_canvas = None
+_ctx = None
+
+def create_canvas(w, h):
+    global _canvas, _ctx
+    container = document.getElementById("canvas-container")
+    if container is None:
+        return
     import js
-    result = js.prompt(str(prompt))
-    return str(result) if result is not None else ""
-__builtins.input = __input_wrapper
+    while container.firstChild:
+        container.removeChild(container.firstChild)
+    canv = document.createElement("canvas")
+    canv.id = "showcase-canvas"
+    canv.width = w
+    canv.height = h
+    canv.style.borderRadius = "12px"
+    canv.style.display = "block"
+    canv.style.margin = "0 auto"
+    canv.style.width = str(w) + "px"
+    canv.style.height = str(h) + "px"
+    canv.style.maxWidth = "100%"
+    container.appendChild(canv)
+    _canvas = canv
+    _ctx = canv.getContext("2d")
+
+def _get_ctx():
+    if _ctx is None:
+        create_canvas(400, 400)
+    return _ctx
+
+def background(color):
+    ctx = _get_ctx()
+    ctx.fillStyle = _resolve_color(color)
+    ctx.fillRect(0, 0, _canvas.width, _canvas.height)
+
+def fill(color):
+    ctx = _get_ctx()
+    ctx.fillStyle = _resolve_color(color)
+
+def rect(x, y, w, h):
+    ctx = _get_ctx()
+    ctx.fillRect(x, y, w, h)
+
+def circle(x, y, r):
+    ctx = _get_ctx()
+    ctx.beginPath()
+    ctx.arc(x, y, r, 0, 2 * math.pi)
+    ctx.fill()
+
+def clear():
+    if _ctx:
+        _ctx.clearRect(0, 0, _canvas.width, _canvas.height)
+
+def random_color():
+    r = random.randint(100, 255)
+    g = random.randint(100, 255)
+    b = random.randint(100, 255)
+    return "rgb(" + str(r) + "," + str(g) + "," + str(b) + ")"
+
+def rgb(r, g, b):
+    return "rgb(" + str(r) + "," + str(g) + "," + str(b) + ")"
+
+def _resolve_color(color):
+    if color[0] == "#" or color[:3] == "rgb":
+        return color
+    named = {"red":"#ff4444","green":"#44aa44","blue":"#4488ff","yellow":"#ffdd44","cyan":"#44dddd","orange":"#ff8844","pink":"#ff66aa","purple":"#aa66ff","white":"#ffffff","black":"#222222","skyblue":"#87ceeb"}
+    return named.get(color, color)
+
+def get_width():
+    if _canvas: return _canvas.width
+    return 400
+
+def get_height():
+    if _canvas: return _canvas.height
+    return 400
+
+def on_key_press(fn):
+    def handler(event):
+        fn(event.key)
+    document.addEventListener("keydown", handler)
+
+def on_click(fn):
+    def handler(event):
+        import js
+        rect = _canvas.getBoundingClientRect()
+        x = event.clientX - rect.left
+        y = event.clientY - rect.top
+        fn(x, y)
+    _canvas.addEventListener("click", handler)
+
+def start_anim(fn):
+    count = [0]
+    def loop(timestamp):
+        fn()
+        count[0] += 1
+        if count[0] < 10000:
+            window.requestAnimationFrame(loop)
+    window.requestAnimationFrame(loop)
 `;
 
 export default function ShowcaseTutorialPage() {
@@ -75,19 +170,21 @@ export default function ShowcaseTutorialPage() {
 
     try {
       const container = document.getElementById("canvas-container");
-      if (container) container.innerHTML = "";
+      if (container) {
+        while (container.firstChild) container.removeChild(container.firstChild);
+      }
 
-      pyodide.setStdout({ batched: (text: string) => {} });
-      pyodide.setStderr({ batched: (text: string) => {} });
-
-      const helperRes = await fetch("/canvas_helper.py");
-      const helperCode = await helperRes.text();
-      const fullCode = helperCode + "\n\n" + project.fullCode;
+      const fullCode = CANVAS_HELPER + "\n\n" + project.fullCode;
+      console.log("Running showcase code...");
+      console.time("showcase-run");
       await pyodide.runPythonAsync(fullCode);
+      console.timeEnd("showcase-run");
     } catch (e: any) {
+      console.error("Showcase run error:", e);
       const container = document.getElementById("canvas-container");
       if (container) {
-        container.innerHTML = `<div style="color:#f87171;font-size:12px;text-align:center;padding:16px;">Error: ${(e.message || "Something went wrong").replace(/</g, "&lt;")}</div>`;
+        const msg = typeof e === "object" ? (e.message || String(e)) : String(e);
+        container.innerHTML = `<div style="color:#f87171;font-size:12px;text-align:center;padding:16px;">Error: ${msg.replace(/</g, "&lt;")}</div>`;
       }
     }
     setRunning(false);
