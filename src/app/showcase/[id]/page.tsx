@@ -15,14 +15,23 @@ declare global {
 
 const CANVAS_HELPER = `
 from js import document, window
+from pyodide.ffi import create_proxy
 import random
 import math
 
 _canvas = None
 _ctx = None
+_proxies = []
+
+def _cleanup():
+    for p in _proxies:
+        try: p.destroy()
+        except: pass
+    _proxies.clear()
 
 def create_canvas(w, h):
     global _canvas, _ctx
+    _cleanup()
     container = document.getElementById("canvas-container")
     if container is None:
         return
@@ -97,7 +106,9 @@ def get_height():
 def on_key_press(fn):
     def handler(event):
         fn(event.key)
-    document.addEventListener("keydown", handler)
+    proxy = create_proxy(handler)
+    _proxies.append(proxy)
+    document.addEventListener("keydown", proxy)
 
 def on_click(fn):
     def handler(event):
@@ -106,7 +117,9 @@ def on_click(fn):
         x = event.clientX - rect.left
         y = event.clientY - rect.top
         fn(x, y)
-    _canvas.addEventListener("click", handler)
+    proxy = create_proxy(handler)
+    _proxies.append(proxy)
+    _canvas.addEventListener("click", proxy)
 
 def start_anim(fn):
     count = [0]
@@ -114,8 +127,10 @@ def start_anim(fn):
         fn()
         count[0] += 1
         if count[0] < 10000:
-            window.requestAnimationFrame(loop)
-    window.requestAnimationFrame(loop)
+            window.requestAnimationFrame(proxy)
+    proxy = create_proxy(loop)
+    _proxies.append(proxy)
+    window.requestAnimationFrame(proxy)
 `;
 
 export default function ShowcaseTutorialPage() {
