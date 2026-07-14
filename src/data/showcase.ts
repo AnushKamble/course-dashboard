@@ -21,53 +21,106 @@ export const showcaseProjects: ShowcaseProject[] = [
     id: "drawing-app",
     title: "Drawing App",
     emoji: "🎨",
-    hook: "Click to draw colorful circles!",
-    description: "Turn your mouse into a paintbrush! Every click draws a colorful circle. Watch how just a few lines of Python can create an interactive drawing app.",
+    hook: "Drag to paint with your mouse!",
+    description: "Turn your mouse into a paintbrush! Drag to draw smooth lines, press 1-4 to switch colors, S/B to change brush size, and C to clear the canvas.",
     difficulty: "Easy",
-    runHint: "Click anywhere on the canvas to draw!",
+    runHint: "Drag to draw! Press 1-4 for colors, S/B for size, C to clear!",
     fullCode: `create_canvas(400, 400)
+background("#222222")
 
-def draw(x, y):
-    fill(random_color())
-    circle(x, y, 25)
+drawing = False
+color = "#ff4466"
+brush_size = 6
+last_x = 0
+last_y = 0
 
-on_click(draw)
-start_anim(lambda: None)`,
+def step():
+    global drawing, color, brush_size, last_x, last_y
+    for evt in poll_events():
+        t = evt["type"]
+        if t == "keydown":
+            c = evt["code"]
+            if c == "KeyC": background("#222222")
+            elif c == "Digit1": color = "#ff4466"
+            elif c == "Digit2": color = "#44bbdd"
+            elif c == "Digit3": color = "#44dd66"
+            elif c == "Digit4": color = "#ffdd44"
+            elif c == "KeyS": brush_size = max(2, brush_size - 2)
+            elif c == "KeyB": brush_size = min(30, brush_size + 2)
+        elif t == "mousedown":
+            drawing = True
+            last_x, last_y = evt["x"], evt["y"]
+            draw_at(evt["x"], evt["y"])
+        elif t == "mousemove" and drawing:
+            fill(color)
+            line(last_x, last_y, evt["x"], evt["y"])
+            last_x, last_y = evt["x"], evt["y"]
+        elif t == "mouseup":
+            drawing = False
+
+def draw_at(x, y):
+    fill(color)
+    circle(x, y, brush_size)`,
     steps: [
       {
-        title: "Create the Canvas",
-        code: `create_canvas(400, 400)`,
-        explanation: `This creates a 400x400 pixel canvas on the screen. The canvas_helper tools (create_canvas, fill, circle, etc.) are pre-loaded for you — no import needed! Think of it like setting up a blank sheet of paper.`,
+        title: "Create Canvas & Background",
+        code: `create_canvas(400, 400)
+background("#222222")`,
+        explanation: `Creates a 400x400 pixel canvas with a dark background. The drawing surface is ready!`,
       },
       {
-        title: "Define the Draw Function",
-        code: `def draw(x, y):`,
-        explanation: `This defines a function called "draw" that will run every time you click. The x and y tell us WHERE on the canvas you clicked.`,
+        title: "Set Up Drawing Variables",
+        code: `drawing = False
+color = "#ff4466"
+brush_size = 6
+last_x = 0
+last_y = 0`,
+        explanation: `"drawing" tracks if the mouse is held down. "color" starts as red, "brush_size" is the stroke thickness. last_x/Y remember where the mouse was so we can draw smooth lines.`,
       },
       {
-        title: "Pick a Random Color",
-        code: `    fill(random_color())`,
-        explanation: `random_color() picks a random bright color each time. fill() tells Python "use this color" for the next shape we draw. The indentation means this line is INSIDE the draw function.`,
+        title: "The Step Function & Event Loop",
+        code: `def step():
+    global drawing, color, brush_size, last_x, last_y
+    for evt in poll_events():`,
+        explanation: `step() runs every frame (~60fps). poll_events() grabs all pending mouse/keyboard events from the browser. We loop through each event and react accordingly.`,
       },
       {
-        title: "Draw a Circle",
-        code: `    circle(x, y, 25)`,
-        explanation: `This draws a circle of radius 25 at the position (x, y) where you clicked. The fill color we set earlier is used automatically!`,
+        title: "Handle Key Presses",
+        code: `        if t == "keydown":
+            c = evt["code"]
+            if c == "KeyC": background("#222222")
+            elif c == "Digit1": color = "#ff4466"
+            elif c == "Digit2": color = "#44bbdd"
+            elif c == "Digit3": color = "#44dd66"
+            elif c == "Digit4": color = "#ffdd44"
+            elif c == "KeyS": brush_size = max(2, brush_size - 2)
+            elif c == "KeyB": brush_size = min(30, brush_size + 2)`,
+        explanation: `Keys 1-4 switch between red, blue, green, and yellow. S shrinks the brush (min 2px), B grows it (max 30px). C clears the canvas to black.`,
       },
       {
-        title: "Connect Click to Drawing",
-        code: `on_click(draw)`,
-        explanation: `This tells Python "whenever the user clicks, call the draw function." It links the click event to our code. Without this, nothing would happen on click!`,
+        title: "Handle Mouse Down",
+        code: `        elif t == "mousedown":
+            drawing = True
+            last_x, last_y = evt["x"], evt["y"]
+            draw_at(evt["x"], evt["y"])`,
+        explanation: `When the mouse button is pressed, we mark "drawing = True", save the position, and draw the first dot immediately.`,
       },
       {
-        title: "Keep the Program Running",
-        code: `start_anim(lambda: None)`,
-        explanation: `This keeps the program alive so it doesn't exit immediately. Without this, the program would run once and stop before you could click anything!`,
+        title: "Handle Mouse Move & Up",
+        code: `        elif t == "mousemove" and drawing:
+            fill(color)
+            line(last_x, last_y, evt["x"], evt["y"])
+            last_x, last_y = evt["x"], evt["y"]
+        elif t == "mouseup":
+            drawing = False`,
+        explanation: `While dragging, every mouse move draws a line from the LAST position to the CURRENT one — creating smooth strokes! Releasing the mouse sets drawing = False.`,
       },
       {
-        title: "Change the Circle Size",
-        code: `    circle(x, y, 25)`,
-        explanation: `Try changing 25 to a bigger number like 50 for bigger circles, or 10 for smaller ones. The third number is the radius — the distance from center to edge. Experiment!`,
+        title: "The Draw Helper",
+        code: `def draw_at(x, y):
+    fill(color)
+    circle(x, y, brush_size)`,
+        explanation: `This helper draws a filled circle at (x, y) using the current color and brush size. Simple but powerful!`,
       },
     ],
   },
@@ -86,19 +139,17 @@ y = 200
 speed_x = 5
 speed_y = 3
 
-def update():
+def step():
     global x, y, speed_x, speed_y
     background("black")
-    x = x + speed_x
-    y = y + speed_y
+    x += speed_x
+    y += speed_y
     if x > 400 or x < 0:
         speed_x = -speed_x
     if y > 400 or y < 0:
         speed_y = -speed_y
     fill("cyan")
-    circle(x, y, 20)
-
-start_anim(update)`,
+    circle(x, y, 20)`,
     steps: [
       {
         title: "Setup Canvas & Ball Position",
@@ -115,16 +166,16 @@ speed_y = 3`,
         explanation: `These control how fast the ball moves. speed_x = 5 means it moves 5 pixels right every frame. speed_y = 3 means 3 pixels down. Change these to make the ball faster or slower!`,
       },
       {
-        title: "The Update Function",
-        code: `def update():
+        title: "The Step Function",
+        code: `def step():
     global x, y, speed_x, speed_y`,
-        explanation: `This function runs every frame (~60 times per second!). "global" tells Python we want to CHANGE the position variables, not create new ones.`,
+        explanation: `step() runs every frame (~60 times per second!). "global" tells Python we want to CHANGE the position variables, not create new ones.`,
       },
       {
         title: "Draw Background & Move Ball",
         code: `    background("black")
-    x = x + speed_x
-    y = y + speed_y`,
+    x += speed_x
+    y += speed_y`,
         explanation: `First, the background is redrawn in black (this clears the previous frame). Then the ball's position is updated by adding the speed. This creates the illusion of movement!`,
       },
       {
@@ -142,9 +193,10 @@ speed_y = 3`,
         explanation: `Sets the ball color to cyan and draws it at the current (x, y) position with radius 20. Try changing "cyan" to "red" or "yellow" to see the ball change color!`,
       },
       {
-        title: "Start the Animation Loop",
-        code: `start_anim(update)`,
-        explanation: `This starts the game loop! It calls the update() function ~60 times every second. Each call moves the ball a tiny bit and redraws it — creating smooth animation.`,
+        title: "Animation Runs Automatically",
+        code: `# No extra code needed!
+# React calls step() 60fps for you`,
+        explanation: `Unlike the old approach, you don't need start_anim()! The page automatically calls your step() function every frame. Just define step() and it works!`,
       },
     ],
   },
@@ -161,60 +213,48 @@ speed_y = 3`,
 bird_y = 250
 gravity = 5
 pipe_x = 400
-pipe_gap = 150
 gap_y = 200
 score = 0
-game_running = True
+game_over = False
+PIPE_GAP = 150
 
-def flap(key):
-    global bird_y
-    if key == "Space" and game_running:
-        bird_y = bird_y - 80
+def step():
+    global bird_y, pipe_x, gap_y, score, game_over
+    for evt in poll_events():
+        if evt["type"] == "keydown" and evt["code"] == "Space" and not game_over:
+            bird_y -= 80
 
-def update():
-    global bird_y, pipe_x, score, game_running, gap_y
+    if game_over:
+        return
+
     background("skyblue")
+    bird_y += gravity
+    pipe_x -= 4
 
-    # Gravity pulls bird down
-    bird_y = bird_y + gravity
-
-    # Draw bird
-    fill("yellow")
-    circle(100, bird_y, 15)
-
-    # Move pipe
-    pipe_x = pipe_x - 4
-
-    # Reset pipe
     if pipe_x < -40:
         pipe_x = 400
         gap_y = 100 + (score % 5) * 50
 
-    # Draw pipes
+    fill("yellow")
+    circle(100, bird_y, 15)
     fill("green")
     rect(pipe_x, 0, 40, gap_y)
-    rect(pipe_x, gap_y + pipe_gap, 40, 500)
+    rect(pipe_x, gap_y + PIPE_GAP, 40, 500)
 
-    # Collision with ground
-    if bird_y > 480:
-        game_running = False
+    if bird_y > 480 or bird_y < 0:
+        game_over = True
+        return
 
-    # Collision with pipes
     if 100 + 15 > pipe_x and 100 - 15 < pipe_x + 40:
-        if bird_y - 15 < gap_y or bird_y + 15 > gap_y + pipe_gap:
-            game_running = False
+        if bird_y - 15 < gap_y or bird_y + 15 > gap_y + PIPE_GAP:
+            game_over = True
+            return
 
-    # Scoring
     if pipe_x + 40 < 100 and pipe_x + 40 > 96:
-        score = score + 1
+        score += 1
 
-    # Draw score
     fill("white")
-    rect(180, 10, 40, 30)
-    fill("black")
-
-on_key_press(flap)
-start_anim(update)`,
+    rect(180, 10, 40, 30)`,
     steps: [
       {
         title: "Setup Canvas & Game Variables",
@@ -223,62 +263,68 @@ start_anim(update)`,
 bird_y = 250
 gravity = 5
 pipe_x = 400
-pipe_gap = 150
 gap_y = 200
 score = 0
-game_running = True`,
-        explanation: `Creates a 400x500 game canvas. Then sets up all the game variables: bird_y = where the bird is, gravity = how fast it falls, pipe_x and gap_y = where the pipe obstacle is, score = your points, game_running = whether the game is still going.`,
+game_over = False
+PIPE_GAP = 150`,
+        explanation: `Creates a 400x500 game canvas. Sets up all game variables: bird_y = where the bird is, gravity = how fast it falls, pipe_x and gap_y = pipe position, score = your points, game_over = whether you crashed. PIPE_GAP is the space between the two pipes.`,
       },
       {
-        title: "The Flap Function",
-        code: `def flap(key):
-    global bird_y
-    if key == "Space" and game_running:
-        bird_y = bird_y - 80`,
-        explanation: `This runs when you press a key. If it's the Spacebar and the game is running, the bird jumps UP by 80 pixels. Negative = upward!`,
+        title: "The Step Function & Flapping",
+        code: `def step():
+    global bird_y, pipe_x, gap_y, score, game_over
+    for evt in poll_events():
+        if evt["type"] == "keydown" and evt["code"] == "Space" and not game_over:
+            bird_y -= 80`,
+        explanation: `step() runs every frame. poll_events() gets all keyboard/mouse events from the browser. If Space is pressed and the game isn't over, the bird jumps UP by 80 pixels!`,
       },
       {
-        title: "Update & Gravity",
-        code: `def update():
-    global bird_y, pipe_x, score, game_running, gap_y
+        title: "Game Over Check & Gravity",
+        code: `    if game_over:
+        return
+
     background("skyblue")
-    bird_y = bird_y + gravity`,
-        explanation: `The update function runs every frame (~60fps). background() clears the screen. Adding gravity to bird_y pulls the bird down each frame — that's why it falls if you don't flap!`,
+    bird_y += gravity
+    pipe_x -= 4`,
+        explanation: `If the game is over, step() returns immediately — the screen freezes! Otherwise, sky clears the frame, gravity pulls the bird down, and the pipe scrolls left.`,
       },
       {
-        title: "Draw Bird & Move Pipe",
+        title: "Draw Bird & Pipes",
         code: `    fill("yellow")
     circle(100, bird_y, 15)
-    pipe_x = pipe_x - 4`,
-        explanation: `Draws the bird as a yellow circle at (100, bird_y). Then moves the pipe left by 4 pixels. When pipe_x < -40, the pipe resets to the right with a new gap position.`,
-      },
-      {
-        title: "Draw the Pipes",
-        code: `    fill("green")
+    fill("green")
     rect(pipe_x, 0, 40, gap_y)
-    rect(pipe_x, gap_y + pipe_gap, 40, 500)`,
-        explanation: `Two green rectangles form the pipe: one from the top down to the gap, and one from the gap bottom to the floor. The empty space between them is where the bird must fly through!`,
+    rect(pipe_x, gap_y + PIPE_GAP, 40, 500)`,
+        explanation: `Draws the bird as a yellow circle on the left. Then draws two green rectangles forming the pipe — one from the top, one from the bottom, with a gap in between for the bird to fly through.`,
       },
       {
         title: "Collision Detection",
-        code: `    if bird_y > 480:
-        game_running = False
+        code: `    if bird_y > 480 or bird_y < 0:
+        game_over = True
+        return
+
     if 100 + 15 > pipe_x and 100 - 15 < pipe_x + 40:
-        if bird_y - 15 < gap_y or bird_y + 15 > gap_y + pipe_gap:
-            game_running = False`,
-        explanation: `Two checks: (1) If bird falls below 480, it hit the ground. (2) If the bird overlaps with the pipe rectangle AND is outside the gap, it hit the pipe. Either way, game over!`,
+        if bird_y - 15 < gap_y or bird_y + 15 > gap_y + PIPE_GAP:
+            game_over = True
+            return`,
+        explanation: `Three ways to die: (1) Hit the ground (y > 480), (2) Hit the ceiling (y < 0), (3) Hit a pipe — bird overlaps pipe rect AND is outside the gap. Any collision sets game_over and freezes the game!`,
       },
       {
-        title: "Scoring & Animation Loop",
+        title: "Score & Scoreboard",
         code: `    if pipe_x + 40 < 100 and pipe_x + 40 > 96:
-        score = score + 1
-    fill("white")
-    rect(180, 10, 40, 30)
-    fill("black")
+        score += 1
 
-on_key_press(flap)
-start_anim(update)`,
-        explanation: `When the pipe passes behind the bird (x position crosses 100), score increases by 1. A white score box is drawn at the top. on_key_press connects the spacebar to flap, and start_anim keeps the game running at 60fps!`,
+    fill("white")
+    rect(180, 10, 40, 30)`,
+        explanation: `When the pipe's right edge passes behind the bird (x crosses 96-100 range), score increases! A white scoreboard rectangle is drawn at the top.`,
+      },
+      {
+        title: "No Extra Wiring Needed",
+        code: `# That's it!
+# React calls step() every frame
+# poll_events() reads key presses
+# No on_key_press or start_anim needed!`,
+        explanation: `This is the beauty of the new system! You just define step() and poll_events() — no event listeners, no animation loop setup. React handles all the browser plumbing. Just focus on the game logic!`,
       },
     ],
   },

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Play, Loader2, FileText, CheckCircle, Sparkles } from "lucide-react";
@@ -10,71 +10,55 @@ import ShowcaseCanvas from "@/components/ShowcaseCanvas";
 import { showcaseProjects } from "@/data/showcase";
 
 declare global {
-  interface Window { loadPyodide: (config: any) => Promise<any>; }
+  interface Window { loadPyodide: (config: any) => Promise<any>; pyodide?: any; __events: any[]; }
 }
 
 const CANVAS_HELPER = `
-from js import document, window
-from pyodide.ffi import create_proxy
+from js import window, document
 import random
 import math
 
 _canvas = None
 _ctx = None
-_proxies = []
-
-def _cleanup():
-    for p in _proxies:
-        try: p.destroy()
-        except: pass
-    _proxies.clear()
 
 def create_canvas(w, h):
     global _canvas, _ctx
-    _cleanup()
-    container = document.getElementById("canvas-container")
-    if container is None:
+    _canvas = document.getElementById("showcase-canvas")
+    if _canvas is None:
         return
-    import js
-    while container.firstChild:
-        container.removeChild(container.firstChild)
-    canv = document.createElement("canvas")
-    canv.id = "showcase-canvas"
-    canv.width = w
-    canv.height = h
-    canv.style.borderRadius = "12px"
-    canv.style.display = "block"
-    canv.style.margin = "0 auto"
-    canv.style.width = str(w) + "px"
-    canv.style.height = str(h) + "px"
-    canv.style.maxWidth = "100%"
-    container.appendChild(canv)
-    _canvas = canv
-    _ctx = canv.getContext("2d")
+    _canvas.width = w
+    _canvas.height = h
+    _canvas.style.width = str(w) + "px"
+    _canvas.style.height = str(h) + "px"
+    _ctx = _canvas.getContext("2d")
 
-def _get_ctx():
-    if _ctx is None:
-        create_canvas(400, 400)
-    return _ctx
+def poll_events():
+    evts = window.__events
+    if evts is None:
+        return []
+    result = []
+    while len(evts) > 0:
+        result.append(evts.shift())
+    return result
 
 def background(color):
-    ctx = _get_ctx()
-    ctx.fillStyle = _resolve_color(color)
-    ctx.fillRect(0, 0, _canvas.width, _canvas.height)
+    if _ctx is None: return
+    _ctx.fillStyle = _resolve(color)
+    _ctx.fillRect(0, 0, _canvas.width, _canvas.height)
 
 def fill(color):
-    ctx = _get_ctx()
-    ctx.fillStyle = _resolve_color(color)
+    if _ctx is None: return
+    _ctx.fillStyle = _resolve(color)
 
 def rect(x, y, w, h):
-    ctx = _get_ctx()
-    ctx.fillRect(x, y, w, h)
+    if _ctx is None: return
+    _ctx.fillRect(x, y, w, h)
 
 def circle(x, y, r):
-    ctx = _get_ctx()
-    ctx.beginPath()
-    ctx.arc(x, y, r, 0, 2 * math.pi)
-    ctx.fill()
+    if _ctx is None: return
+    _ctx.beginPath()
+    _ctx.arc(x, y, r, 0, 2 * math.pi)
+    _ctx.fill()
 
 def clear():
     if _ctx:
@@ -89,48 +73,18 @@ def random_color():
 def rgb(r, g, b):
     return "rgb(" + str(r) + "," + str(g) + "," + str(b) + ")"
 
-def _resolve_color(color):
+def _resolve(color):
     if color[0] == "#" or color[:3] == "rgb":
         return color
     named = {"red":"#ff4444","green":"#44aa44","blue":"#4488ff","yellow":"#ffdd44","cyan":"#44dddd","orange":"#ff8844","pink":"#ff66aa","purple":"#aa66ff","white":"#ffffff","black":"#222222","skyblue":"#87ceeb"}
     return named.get(color, color)
 
-def get_width():
-    if _canvas: return _canvas.width
-    return 400
-
-def get_height():
-    if _canvas: return _canvas.height
-    return 400
-
-def on_key_press(fn):
-    def handler(event):
-        fn(event.key)
-    proxy = create_proxy(handler)
-    _proxies.append(proxy)
-    document.addEventListener("keydown", proxy)
-
-def on_click(fn):
-    def handler(event):
-        import js
-        rect = _canvas.getBoundingClientRect()
-        x = event.clientX - rect.left
-        y = event.clientY - rect.top
-        fn(x, y)
-    proxy = create_proxy(handler)
-    _proxies.append(proxy)
-    _canvas.addEventListener("click", proxy)
-
-def start_anim(fn):
-    count = [0]
-    def loop(timestamp):
-        fn()
-        count[0] += 1
-        if count[0] < 10000:
-            window.requestAnimationFrame(proxy)
-    proxy = create_proxy(loop)
-    _proxies.append(proxy)
-    window.requestAnimationFrame(proxy)
+def line(x1, y1, x2, y2):
+    if _ctx is None: return
+    _ctx.beginPath()
+    _ctx.moveTo(x1, y1)
+    _ctx.lineTo(x2, y2)
+    _ctx.stroke()
 `;
 
 export default function ShowcaseTutorialPage() {
@@ -148,6 +102,72 @@ export default function ShowcaseTutorialPage() {
   const [tourStep, setTourStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+
+  const animRef = useRef<number | null>(null);
+  const animRunningRef = useRef(false);
+
+  // Set up global JS event listeners once
+  useEffect(() => {
+    window.__events = [];
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      e.preventDefault();
+      if (window.__events) {
+        window.__events.push({ type: "keydown", code: e.code, key: e.key });
+      }
+    };
+
+    function getCanvasCoords(e: MouseEvent) {
+      const canvas = document.getElementById("showcase-canvas");
+      if (!canvas) return null;
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = (canvas as HTMLCanvasElement).width / rect.width;
+      const scaleY = (canvas as HTMLCanvasElement).height / rect.height;
+      return {
+        x: (e.clientX - rect.left) * scaleX,
+        y: (e.clientY - rect.top) * scaleY,
+      };
+    }
+
+    const onMouseDown = (e: MouseEvent) => {
+      const coords = getCanvasCoords(e);
+      if (coords && window.__events) {
+        window.__events.push({ type: "mousedown", x: coords.x, y: coords.y });
+      }
+    };
+
+    const onMouseUp = (e: MouseEvent) => {
+      const coords = getCanvasCoords(e);
+      if (coords && window.__events) {
+        window.__events.push({ type: "mouseup", x: coords.x, y: coords.y });
+      }
+    };
+
+    const onMouseMove = (e: MouseEvent) => {
+      const coords = getCanvasCoords(e);
+      if (coords && window.__events) {
+        window.__events.push({ type: "mousemove", x: coords.x, y: coords.y });
+      }
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("mousedown", onMouseDown);
+    document.addEventListener("mouseup", onMouseUp);
+    document.addEventListener("mousemove", onMouseMove);
+
+    return () => {
+      window.__events = [];
+      animRunningRef.current = false;
+      if (animRef.current) {
+        cancelAnimationFrame(animRef.current);
+        animRef.current = null;
+      }
+      document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("mousedown", onMouseDown);
+      document.removeEventListener("mouseup", onMouseUp);
+      document.removeEventListener("mousemove", onMouseMove);
+    };
+  }, []);
 
   useEffect(() => {
     fetch("/api/auth/me")
@@ -179,31 +199,44 @@ export default function ShowcaseTutorialPage() {
     setPyodideLoading(false);
   };
 
+  const runStep = useCallback(async () => {
+    if (!animRunningRef.current) return;
+    try {
+      await window.pyodide.runPythonAsync("step()");
+    } catch (e: any) {
+      console.error("step error:", e);
+      animRunningRef.current = false;
+      return;
+    }
+    if (animRunningRef.current) {
+      animRef.current = requestAnimationFrame(runStep);
+    }
+  }, []);
+
   const handleRun = useCallback(async () => {
-    if (!pyodide || !project) return;
+    const p = showcaseProjects.find((x) => x.id === params.id);
+    if (!pyodide || !p) return;
+
+    // Stop any existing animation cleanly
+    animRunningRef.current = false;
+    if (animRef.current) {
+      cancelAnimationFrame(animRef.current);
+      animRef.current = null;
+    }
+
     setRunning(true);
+    window.__events = [];
 
     try {
-      const container = document.getElementById("canvas-container");
-      if (container) {
-        while (container.firstChild) container.removeChild(container.firstChild);
-      }
+      await pyodide.runPythonAsync(CANVAS_HELPER + "\n\n" + p.fullCode);
 
-      const fullCode = CANVAS_HELPER + "\n\n" + project.fullCode;
-      console.log("Running showcase code...");
-      console.time("showcase-run");
-      await pyodide.runPythonAsync(fullCode);
-      console.timeEnd("showcase-run");
+      animRunningRef.current = true;
+      animRef.current = requestAnimationFrame(runStep);
     } catch (e: any) {
-      console.error("Showcase run error:", e);
-      const container = document.getElementById("canvas-container");
-      if (container) {
-        const msg = typeof e === "object" ? (e.message || String(e)) : String(e);
-        container.innerHTML = `<div style="color:#f87171;font-size:12px;text-align:center;padding:16px;">Error: ${msg.replace(/</g, "&lt;")}</div>`;
-      }
+      console.error("Run error:", e);
     }
     setRunning(false);
-  }, [pyodide, project]);
+  }, [pyodide, params.id, runStep]);
 
   const handleStartTour = () => {
     setInTour(true);
@@ -216,12 +249,13 @@ export default function ShowcaseTutorialPage() {
   };
 
   const handleComplete = async () => {
-    if (!project) return;
+    const p = showcaseProjects.find((x) => x.id === params.id);
+    if (!p) return;
     setSubmitting(true);
     const res = await fetch("/api/projects/submit", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ project_id: project.id, code: project.fullCode }),
+      body: JSON.stringify({ project_id: p.id, code: p.fullCode }),
     });
     if (res.ok) setSubmitted(true);
     setSubmitting(false);
