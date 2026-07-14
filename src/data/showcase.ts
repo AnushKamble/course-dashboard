@@ -21,106 +21,170 @@ export const showcaseProjects: ShowcaseProject[] = [
     id: "drawing-app",
     title: "Drawing App",
     emoji: "🎨",
-    hook: "Drag to paint with your mouse!",
-    description: "Turn your mouse into a paintbrush! Drag to draw smooth lines, press 1-4 to switch colors, S/B to change brush size, and C to clear the canvas.",
+    hook: "Full paintbrush toolkit — drag, color, erase, fill, randomize!",
+    description: "A complete paint program! Drag to paint smooth strokes, switch between 8 colors, toggle eraser mode, fill the canvas, randomize colors, change brush shape, and more.",
     difficulty: "Easy",
-    runHint: "Drag to draw! Press 1-4 for colors, S/B for size, C to clear!",
+    runHint: "Drag to paint! 1-8=colors, E=eraser, F=fill, R=random, Q=square brush, S/B=size, C=clear",
     fullCode: `create_canvas(400, 400)
-background("#222222")
 
+bg = "#222222"
+background(bg)
 drawing = False
 color = "#ff4466"
 brush_size = 6
+eraser = False
+square = False
 last_x = 0
 last_y = 0
+colors = ["#ff4466", "#44bbdd", "#44dd66", "#ffdd44", "#ff8844", "#cc66ff", "#ff66aa", "#ffffff"]
 
 def step():
-    global drawing, color, brush_size, last_x, last_y
+    global drawing, color, brush_size, eraser, square, last_x, last_y, bg
     for evt in poll_events():
         t = evt["type"]
         if t == "keydown":
             c = evt["code"]
-            if c == "KeyC": background("#222222")
-            elif c == "Digit1": color = "#ff4466"
-            elif c == "Digit2": color = "#44bbdd"
-            elif c == "Digit3": color = "#44dd66"
-            elif c == "Digit4": color = "#ffdd44"
+            if c == "KeyC": background(bg)
+            elif c == "KeyE": eraser = not eraser
+            elif c == "KeyF": background(color); bg = color
+            elif c == "KeyR": color = random_color()
+            elif c == "KeyQ": square = not square
             elif c == "KeyS": brush_size = max(2, brush_size - 2)
-            elif c == "KeyB": brush_size = min(30, brush_size + 2)
+            elif c == "KeyB": brush_size = min(40, brush_size + 2)
+            else:
+                for i in range(8):
+                    if c == "Digit" + str(i + 1):
+                        eraser = False
+                        color = colors[i]
         elif t == "mousedown":
             drawing = True
             last_x, last_y = evt["x"], evt["y"]
             draw_at(evt["x"], evt["y"])
         elif t == "mousemove" and drawing:
-            fill(color)
-            line(last_x, last_y, evt["x"], evt["y"])
+            stroke(last_x, last_y, evt["x"], evt["y"])
             last_x, last_y = evt["x"], evt["y"]
         elif t == "mouseup":
             drawing = False
 
+def stroke(x1, y1, x2, y2):
+    c = bg if eraser else color
+    fill(c)
+    if square:
+        # Draw a thick line as overlapping squares
+        steps = max(int(((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5 / 3), 1)
+        for i in range(steps + 1):
+            t = i / steps
+            cx = x1 + (x2 - x1) * t
+            cy = y1 + (y2 - y1) * t
+            rect(cx - brush_size / 2, cy - brush_size / 2, brush_size, brush_size)
+    else:
+        line(x1, y1, x2, y2)
+        circle(x2, y2, brush_size / 2)
+
 def draw_at(x, y):
-    fill(color)
-    circle(x, y, brush_size)`,
+    c = bg if eraser else color
+    fill(c)
+    if square:
+        rect(x - brush_size / 2, y - brush_size / 2, brush_size, brush_size)
+    else:
+        circle(x, y, brush_size / 2)`,
     steps: [
       {
-        title: "Create Canvas & Background",
+        title: "Canvas & Setup",
         code: `create_canvas(400, 400)
-background("#222222")`,
-        explanation: `Creates a 400x400 pixel canvas with a dark background. The drawing surface is ready!`,
-      },
-      {
-        title: "Set Up Drawing Variables",
-        code: `drawing = False
+
+bg = "#222222"
+background(bg)
+drawing = False
 color = "#ff4466"
 brush_size = 6
+eraser = False
+square = False
 last_x = 0
 last_y = 0`,
-        explanation: `"drawing" tracks if the mouse is held down. "color" starts as red, "brush_size" is the stroke thickness. last_x/Y remember where the mouse was so we can draw smooth lines.`,
+        explanation: `Sets up the canvas and all painting variables: bg=background color, drawing=tracks mouse state, color=current brush, brush_size=thickness, eraser=toggles erase mode, square=toggles brush shape, last_x/Y=for smooth strokes.`,
       },
       {
-        title: "The Step Function & Event Loop",
+        title: "8 Color Palette",
+        code: `colors = ["#ff4466", "#44bbdd", "#44dd66",
+          "#ffdd44", "#ff8844", "#cc66ff",
+          "#ff66aa", "#ffffff"]`,
+        explanation: `A list of 8 colors! Press keys 1-8 to select: red, blue, green, yellow, orange, purple, pink, white. Pick any color instantly!`,
+      },
+      {
+        title: "The Step Function & Key Handling",
         code: `def step():
-    global drawing, color, brush_size, last_x, last_y
-    for evt in poll_events():`,
-        explanation: `step() runs every frame (~60fps). poll_events() grabs all pending mouse/keyboard events from the browser. We loop through each event and react accordingly.`,
-      },
-      {
-        title: "Handle Key Presses",
-        code: `        if t == "keydown":
+    global drawing, color, brush_size, eraser, square, last_x, last_y, bg
+    for evt in poll_events():
+        if evt["type"] == "keydown":
             c = evt["code"]
-            if c == "KeyC": background("#222222")
-            elif c == "Digit1": color = "#ff4466"
-            elif c == "Digit2": color = "#44bbdd"
-            elif c == "Digit3": color = "#44dd66"
-            elif c == "Digit4": color = "#ffdd44"
+            if c == "KeyC": background(bg)
+            elif c == "KeyE": eraser = not eraser
+            elif c == "KeyF": background(color); bg = color
+            elif c == "KeyR": color = random_color()
+            elif c == "KeyQ": square = not square
             elif c == "KeyS": brush_size = max(2, brush_size - 2)
-            elif c == "KeyB": brush_size = min(30, brush_size + 2)`,
-        explanation: `Keys 1-4 switch between red, blue, green, and yellow. S shrinks the brush (min 2px), B grows it (max 30px). C clears the canvas to black.`,
+            elif c == "KeyB": brush_size = min(40, brush_size + 2)
+            else:
+                for i in range(8):
+                    if c == "Digit" + str(i + 1):
+                        eraser = False
+                        color = colors[i]`,
+        explanation: `step() runs every frame and processes all pending events. C=clear, E=toggle eraser, F=fill canvas with current color, R=pick random color, Q=toggle square brush, S/B=shrink/grow brush, 1-8=pick a color from the palette.`,
       },
       {
-        title: "Handle Mouse Down",
+        title: "Mouse Event Handling",
         code: `        elif t == "mousedown":
             drawing = True
             last_x, last_y = evt["x"], evt["y"]
-            draw_at(evt["x"], evt["y"])`,
-        explanation: `When the mouse button is pressed, we mark "drawing = True", save the position, and draw the first dot immediately.`,
-      },
-      {
-        title: "Handle Mouse Move & Up",
-        code: `        elif t == "mousemove" and drawing:
-            fill(color)
-            line(last_x, last_y, evt["x"], evt["y"])
+            draw_at(evt["x"], evt["y"])
+        elif t == "mousemove" and drawing:
+            stroke(last_x, last_y, evt["x"], evt["y"])
             last_x, last_y = evt["x"], evt["y"]
         elif t == "mouseup":
             drawing = False`,
-        explanation: `While dragging, every mouse move draws a line from the LAST position to the CURRENT one — creating smooth strokes! Releasing the mouse sets drawing = False.`,
+        explanation: `Mouse down starts drawing and places the first dot. Mouse move draws a stroke between the last position and current one. Mouse up stops drawing. Smooth and responsive!`,
+      },
+      {
+        title: "The Stroke Function",
+        code: `def stroke(x1, y1, x2, y2):
+    c = bg if eraser else color
+    fill(c)
+    if square:
+        steps = max(int(((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5 / 3), 1)
+        for i in range(steps + 1):
+            t = i / steps
+            cx = x1 + (x2 - x1) * t
+            cy = y1 + (y2 - y1) * t
+            rect(cx - brush_size / 2, cy - brush_size / 2, brush_size, brush_size)
+    else:
+        line(x1, y1, x2, y2)
+        circle(x2, y2, brush_size / 2)`,
+        explanation: `The stroke function connects two points. If eraser mode is on, it draws with the background color (erasing!). Square brush draws overlapping squares along the path using math. Round brush draws a line plus a circle at the end for smooth caps.`,
       },
       {
         title: "The Draw Helper",
         code: `def draw_at(x, y):
-    fill(color)
-    circle(x, y, brush_size)`,
-        explanation: `This helper draws a filled circle at (x, y) using the current color and brush size. Simple but powerful!`,
+    c = bg if eraser else color
+    fill(c)
+    if square:
+        rect(x - brush_size / 2, y - brush_size / 2, brush_size, brush_size)
+    else:
+        circle(x, y, brush_size / 2)`,
+        explanation: `draw_at() places a single brush dab at (x,y). Square mode draws a rectangle, round mode draws a circle. Eraser uses the background color to "erase" previous strokes.`,
+      },
+      {
+        title: "Full Controls Reference",
+        code: `# KEYS:
+# 1-8  Pick color from palette
+# E    Toggle eraser mode
+# F    Fill canvas with current color
+# R    Random color
+# Q    Toggle square / round brush
+# S    Smaller brush
+# B    Bigger brush
+# C    Clear canvas`,
+        explanation: `Try them all! 1-8 for colors (red, blue, green, yellow, orange, purple, pink, white). E to erase mistakes. F to fill the whole canvas. R for surprise colors. Q to switch between round and square brushes. S and B to adjust size. C to start fresh!`,
       },
     ],
   },

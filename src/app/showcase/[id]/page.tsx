@@ -150,7 +150,7 @@ export default function ShowcaseTutorialPage() {
       }
     };
 
-    document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("keydown", onKeyDown, { capture: true });
     document.addEventListener("mousedown", onMouseDown);
     document.addEventListener("mouseup", onMouseUp);
     document.addEventListener("mousemove", onMouseMove);
@@ -162,7 +162,7 @@ export default function ShowcaseTutorialPage() {
         cancelAnimationFrame(animRef.current);
         animRef.current = null;
       }
-      document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("keydown", onKeyDown, { capture: true });
       document.removeEventListener("mousedown", onMouseDown);
       document.removeEventListener("mouseup", onMouseUp);
       document.removeEventListener("mousemove", onMouseMove);
