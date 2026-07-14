@@ -416,79 +416,70 @@ SKELETON = [(0,1),(1,2),(2,3),(3,4),(0,5),(5,6),(6,7),(7,8),(0,9),(9,10),(10,11)
 
 def step():
     draw_video()
-    hd = get_hand_data()
+    status = get_hand_status()
 
-    # Semi-transparent overlay at top and bottom
     fill("rgba(0,0,0,0.5)")
     rect(0, 0, 640, 70)
     rect(0, 430, 640, 50)
 
-    if hd is None:
-        fill("#ffffff")
-        text("Show your hand to the camera", 320, 240, 26, "#ffffff")
-        text("Make a gesture: Rock | Paper | Scissors | Thumbs Up | Point", 320, 270, 14, "#aaaaaa")
+    if status == "requesting_camera":
+        fill("#ffdd44"); text("Requesting camera access...", 320, 240, 22, "#ffdd44")
+        return
+    if status == "loading_model":
+        fill("#ffdd44"); text("Loading AI model... (first time may take a moment)", 320, 236, 18, "#ffdd44")
+        fill("#aaaaaa"); text("MediaPipe hand tracking via WebAssembly", 320, 266, 13, "#aaaaaa")
+        return
+    if status == "model_error":
+        fill("#ff4466"); text("AI model failed to load", 320, 240, 22, "#ff4466")
+        fill("#ff4466"); text("Try refreshing the page", 320, 270, 14, "#ff4466")
+        return
+    if status == "error":
+        fill("#ff4466"); text("Camera access failed", 320, 240, 22, "#ff4466")
+        fill("#ff4466"); text("Please allow camera permissions in your browser", 320, 270, 14, "#ff4466")
+        return
+
+    hd = get_hand_data()
+    if hd is None or status == "no_hand":
+        fill("#ffffff"); text("Show your hand to the camera", 320, 236, 24, "#ffffff")
+        fill("#aaaaaa"); text("Rock ✊ | Paper ✋ | Scissors ✌️ | Thumbs Up 👍 | Point ☝️", 320, 268, 13, "#aaaaaa")
         return
 
     landmarks = hd["landmarks"]
     gesture = hd["gesture"]
 
-    # Draw skeleton connections with glow
     for i, j in SKELETON:
         x1 = landmarks[i]["x"] * 640
         y1 = landmarks[i]["y"] * 480
         x2 = landmarks[j]["x"] * 640
         y2 = landmarks[j]["y"] * 480
-        fill("rgba(68,221,136,0.3)")
-        line(x1 - 1, y1 - 1, x2 - 1, y2 - 1)
-        line(x1 + 1, y1 + 1, x2 + 1, y2 + 1)
-        fill("#44dd88")
-        line(x1, y1, x2, y2)
+        fill("rgba(68,221,136,0.3)"); line(x1 - 1, y1 - 1, x2 - 1, y2 - 1)
+        fill("rgba(68,221,136,0.3)"); line(x1 + 1, y1 + 1, x2 + 1, y2 + 1)
+        fill("#44dd88"); line(x1, y1, x2, y2)
 
-    # Draw joint dots with glow
     for lm in landmarks:
-        fill("rgba(255,255,255,0.3)")
-        circle(lm["x"] * 640, lm["y"] * 480, 8)
-        fill("#ffffff")
-        circle(lm["x"] * 640, lm["y"] * 480, 5)
+        fill("rgba(255,255,255,0.3)"); circle(lm["x"] * 640, lm["y"] * 480, 8)
+        fill("#ffffff"); circle(lm["x"] * 640, lm["y"] * 480, 5)
 
-    # Gesture name in colored banner
     label = GESTURES.get(gesture, gesture)
     gc = GESTURE_COLORS.get(gesture, "#ffffff")
-    fill(gc)
-    rect(190, 10, 260, 50)
-    fill("rgba(0,0,0,0.6)")
-    rect(195, 15, 250, 40)
-    fill(gc)
-    text(label, 320, 44, 26, gc)
+    fill(gc); rect(190, 10, 260, 50)
+    fill("rgba(0,0,0,0.6)"); rect(195, 15, 250, 40)
+    fill(gc); text(label, 320, 44, 26, gc)
 
-    # Gesture emoji large on right side
     emoji_map = {"ROCK": "✊", "PAPER": "✋", "SCISSORS": "✌️", "THUMBS_UP": "👍", "POINT": "☝️", "OK": "👌", "HAND": "🤚"}
-    emoji = emoji_map.get(gesture, "🖐️")
-    fill(gc)
-    text(emoji, 560, 60, 40, gc)
+    fill(gc); text(emoji_map.get(gesture, "🖐️"), 560, 60, 40, gc)
 
-    # Fingertip positions
     tips = [("Thumb", 4), ("Index", 8), ("Middle", 12), ("Ring", 16), ("Pinky", 20)]
-    fill("rgba(0,0,0,0.5)")
-    rect(5, 435, 200, 40)
-    for i, (name, idx) in enumerate(tips):
+    fill("rgba(0,0,0,0.5)"); rect(5, 435, 200, 40)
+    for name, idx in tips:
         lm = landmarks[idx]
-        x = lm["x"] * 640
-        y = lm["y"] * 480
-        fill(GESTURE_COLORS.get(gesture, "#ffffff"))
-        circle(x, y, 6)
-        fill("#ffffff")
-        text(name + " (" + str(int(lm["x"] * 100)) + "," + str(int(lm["y"] * 100)) + ")", x + 40, y + 5, 9, "#ffffff")
+        fill(gc); circle(lm["x"] * 640, lm["y"] * 480, 6)
+        fill("#ffffff"); text(name + " (" + str(int(lm["x"] * 100)) + "," + str(int(lm["y"] * 100)) + ")", lm["x"] * 640 + 40, lm["y"] * 480 + 5, 9, "#ffffff")
 
-    # Landmark count and status
-    fill("rgba(0,0,0,0.5)")
-    rect(440, 435, 195, 40)
+    fill("rgba(0,0,0,0.5)"); rect(440, 435, 195, 40)
     fill("#44dd88" if gesture != "HAND" else "#ff8844")
     text("21 landmarks • " + label, 540, 460, 12, "#ffffff")
-
-    # Instructions
-    fill("#aaaaaa")
-    text("Try: Rock ✊ | Paper ✋ | Scissors ✌️ | Thumbs Up 👍 | Point ☝️ | OK 👌", 320, 476, 11, "#888888")`,
+    fill("#aaaaaa"); text("Try: Rock ✊ | Paper ✋ | Scissors ✌️ | Thumbs Up 👍 | Point ☝️ | OK 👌", 320, 476, 11, "#888888")`,
     steps: [
       {
         title: "Canvas Setup & Live Video",

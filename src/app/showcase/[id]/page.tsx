@@ -10,7 +10,7 @@ import ShowcaseCanvas from "@/components/ShowcaseCanvas";
 import { showcaseProjects } from "@/data/showcase";
 
 declare global {
-  interface Window { loadPyodide: (config: any) => Promise<any>; pyodide?: any; __events: any[]; __handData: any; Hands: any; Camera: any; }
+  interface Window { loadPyodide: (config: any) => Promise<any>; pyodide?: any; __events: any[]; __handData: any; __handStatus: string | null; Hands: any; }
 }
 
 const CANVAS_HELPER = `
@@ -45,7 +45,13 @@ def get_hand_data():
     hd = window.__handData
     if hd is None:
         return None
-    return {"gesture": hd.gesture, "landmarks": [{"x": lm.x, "y": lm.y, "z": lm.z} for lm in hd.landmarks]}
+    return hd.to_py()
+
+def get_hand_status():
+    s = window.__handStatus
+    if s is None:
+        return ""
+    return str(s)
 
 def background(color):
     if _ctx is None: return
@@ -267,17 +273,18 @@ export default function ShowcaseTutorialPage() {
   const stopHandTracking = () => {
     const ht = handTrackingRef.current;
     if (ht) {
-      try { ht.camera.stop(); } catch {}
-      try { ht.hands.close(); } catch {}
+      try { ht.stop(); } catch {}
       try { ht.stream.getTracks().forEach((t: any) => t.stop()); } catch {}
       if (ht.video && ht.video.parentNode) ht.video.parentNode.removeChild(ht.video);
       handTrackingRef.current = null;
     }
     window.__handData = null;
+    window.__handStatus = null;
   };
 
   const setupHandTracking = useCallback(async () => {
     stopHandTracking();
+    window.__handStatus = "requesting_camera";
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
@@ -290,13 +297,14 @@ export default function ShowcaseTutorialPage() {
       video.srcObject = stream;
       await video.play();
 
+      window.__handStatus = "loading_model";
+
       if (!window.Hands) {
-        await loadScript("https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.js");
-        await loadScript("https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1675466120/camera_utils.js");
+        await loadScript("https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4/hands.js");
       }
 
       const hands = new window.Hands({
-        locateFile: (file: string) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${file}`,
+        locateFile: (file: string) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4/${file}`,
       });
 
       hands.setOptions({
@@ -311,22 +319,31 @@ export default function ShowcaseTutorialPage() {
           const landmarks = results.multiHandLandmarks[0];
           const gesture = classifyGesture(landmarks);
           window.__handData = { landmarks, gesture };
+          window.__handStatus = "hand_detected";
         } else {
           window.__handData = null;
+          window.__handStatus = "no_hand";
         }
       });
 
-      const camera = new window.Camera(video, {
-        onFrame: async () => { await hands.send({ image: video }); },
-        width: 640,
-        height: 480,
-      });
+      let running = true;
+      const sendFrame = async () => {
+        if (!running) return;
+        try {
+          await hands.send({ image: video });
+        } catch (e: any) {
+          console.error("MediaPipe error:", e);
+          window.__handStatus = "model_error";
+        }
+        if (running) setTimeout(sendFrame, 50);
+      };
+      sendFrame();
 
-      await camera.start();
-
-      handTrackingRef.current = { hands, camera, video, stream };
+      window.__handStatus = "running";
+      handTrackingRef.current = { video, stream, stop: () => { running = false; } };
     } catch (e: any) {
       console.error("Hand tracking setup failed:", e);
+      window.__handStatus = "error";
       window.__handData = null;
     }
   }, []);
