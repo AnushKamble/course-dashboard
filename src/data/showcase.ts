@@ -392,4 +392,139 @@ PIPE_GAP = 150`,
       },
     ],
   },
+  {
+    id: "hand-gesture",
+    title: "Rock Paper Scissors",
+    emoji: "✋",
+    hook: "Show your hand to the camera!",
+    description: "AI-powered hand gesture recognition! Show Rock, Paper, Scissors, Peace, Thumbs Up, or Pointing to the camera and the AI recognizes it in real-time using MediaPipe hand tracking.",
+    difficulty: "Medium",
+    runHint: "Show your hand to the camera! Gestures: Rock ✊, Paper ✋, Scissors ✌️, Thumbs Up 👍, Pointing ☝️",
+    fullCode: `create_canvas(640, 480)
+
+GESTURES = {
+    "ROCK": "✊ Rock",
+    "PAPER": "✋ Paper",
+    "SCISSORS": "✌️ Scissors",
+    "THUMBS_UP": "👍 Thumbs Up",
+    "POINT": "☝️ Pointing",
+    "OK": "👌 OK",
+    "HAND": "🤚 Hand",
+}
+SKELETON = [(0,1),(1,2),(2,3),(3,4),(0,5),(5,6),(6,7),(7,8),(0,9),(9,10),(10,11),(11,12),(0,13),(13,14),(14,15),(15,16),(0,17),(17,18),(18,19),(19,20),(5,9),(9,13),(13,17)]
+
+def step():
+    background("#1a1a2e")
+    hd = get_hand_data()
+    if hd is None:
+        text("Show your hand to the camera", 320, 240, 22, "#666666")
+        return
+
+    landmarks = hd["landmarks"]
+    gesture = hd["gesture"]
+
+    # Draw skeleton connections
+    for i, j in SKELETON:
+        x1 = landmarks[i]["x"] * 640
+        y1 = landmarks[i]["y"] * 480
+        x2 = landmarks[j]["x"] * 640
+        y2 = landmarks[j]["y"] * 480
+        fill("#44dd88")
+        line(x1, y1, x2, y2)
+
+    # Draw joint dots
+    for lm in landmarks:
+        fill("#ffffff")
+        circle(lm["x"] * 640, lm["y"] * 480, 5)
+
+    # Gesture name at top
+    label = GESTURES.get(gesture, gesture)
+    color_map = {"ROCK": "#ff4466", "PAPER": "#44bbdd", "SCISSORS": "#ffdd44", "THUMBS_UP": "#44dd66", "POINT": "#ff8844", "OK": "#cc66ff", "HAND": "#888888"}
+    c = color_map.get(gesture, "white")
+    fill(c)
+    rect(200, 10, 240, 50)
+    fill("#1a1a2e")
+    text(label, 320, 46, 24, c)
+
+    # Instructions
+    fill("#444488")
+    text("Rock | Paper | Scissors | Thumbs Up | Point | OK", 320, 470, 12, "#666688")`,
+    steps: [
+      {
+        title: "Canvas Setup & Gesture Labels",
+        code: `create_canvas(640, 480)
+
+GESTURES = {
+    "ROCK": "✊ Rock",
+    "PAPER": "✋ Paper",
+    "SCISSORS": "✌️ Scissors",
+    "THUMBS_UP": "👍 Thumbs Up",
+    "POINT": "☝️ Pointing",
+    "OK": "👌 OK",
+    "HAND": "🤚 Hand",
+}`,
+        explanation: `Creates a 640x480 canvas for the camera view. GESTURES maps internal names to display labels with emojis. The AI detects your hand and classifies it into one of these poses!`,
+      },
+      {
+        title: "Skeleton Connections",
+        code: `SKELETON = [(0,1),(1,2),(2,3),(3,4),(0,5),(5,6),(6,7),(7,8),
+  (0,9),(9,10),(10,11),(11,12),(0,13),(13,14),(14,15),(15,16),
+  (0,17),(17,18),(18,19),(19,20),(5,9),(9,13),(13,17)]`,
+        explanation: `These 21 landmark indices define the hand skeleton. Each pair connects two joints: thumb (0-4), index (5-8), middle (9-12), ring (13-16), pinky (17-20), plus palm connections (5-9-13-17).`,
+      },
+      {
+        title: "The Step Function",
+        code: `def step():
+    background("#1a1a2e")
+    hd = get_hand_data()
+    if hd is None:
+        text("Show your hand to the camera", 320, 240, 22, "#666666")
+        return`,
+        explanation: `step() runs every frame. get_hand_data() reads the latest hand landmarks detected by MediaPipe in the browser. If no hand is visible, it shows a prompt. This is where Python meets AI!`,
+      },
+      {
+        title: "Draw the Hand Skeleton",
+        code: `    landmarks = hd["landmarks"]
+    for i, j in SKELETON:
+        x1 = landmarks[i]["x"] * 640
+        y1 = landmarks[i]["y"] * 480
+        x2 = landmarks[j]["x"] * 640
+        y2 = landmarks[j]["y"] * 480
+        fill("#44dd88")
+        line(x1, y1, x2, y2)
+    for lm in landmarks:
+        fill("#ffffff")
+        circle(lm["x"] * 640, lm["y"] * 480, 5)`,
+        explanation: `Each landmark has x, y, z between 0-1. We multiply by canvas size (640x480) to get pixel positions. Green lines connect bones, white dots mark joints. The skeleton follows your hand in real-time!`,
+      },
+      {
+        title: "Gesture Detection",
+        code: `    gesture = hd["gesture"]
+    color_map = {"ROCK": "#ff4466", "PAPER": "#44bbdd",
+      "SCISSORS": "#ffdd44", "THUMBS_UP": "#44dd66",
+      "POINT": "#ff8844", "OK": "#cc66ff", "HAND": "#888888"}
+    c = color_map.get(gesture, "white")
+    fill(c)
+    rect(200, 10, 240, 50)`,
+        explanation: `The JavaScript code classifies your hand pose by checking which fingers are extended (comparing fingertip-to-wrist distances). Each gesture gets a color-coded banner at the top of the screen!`,
+      },
+      {
+        title: "Display the Gesture Label",
+        code: `    label = GESTURES.get(gesture, gesture)
+    fill("#1a1a2e")
+    text(label, 320, 46, 24, c)`,
+        explanation: `Draws the gesture name and emoji in the colored banner. "ROCK" shows ✊ Rock in red, "PAPER" shows ✋ Paper in blue, "SCISSORS" shows ✌️ Scissors in yellow, and so on!`,
+      },
+      {
+        title: "How It Works — Behind the Scenes",
+        code: `# JavaScript handles the AI:
+# 1. MediaPipe Hands detects 21 landmarks
+# 2. Gesture classifier checks finger extension
+# 3. Result stored in window.__handData
+# 4. Python reads it via get_hand_data()
+# 5. Python draws skeleton + label`,
+        explanation: `The heavy AI work runs in JavaScript (MediaPipe WASM). Python's job is to read the results and draw them beautifully. This is a great example of using Python for visualization while JS handles real-time ML!`,
+      },
+    ],
+  },
 ];

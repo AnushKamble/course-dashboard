@@ -10,7 +10,7 @@ import ShowcaseCanvas from "@/components/ShowcaseCanvas";
 import { showcaseProjects } from "@/data/showcase";
 
 declare global {
-  interface Window { loadPyodide: (config: any) => Promise<any>; pyodide?: any; __events: any[]; }
+  interface Window { loadPyodide: (config: any) => Promise<any>; pyodide?: any; __events: any[]; __handData: any; Hands: any; Camera: any; }
 }
 
 const CANVAS_HELPER = `
@@ -40,6 +40,12 @@ def poll_events():
     while len(evts) > 0:
         result.append(evts.shift())
     return result
+
+def get_hand_data():
+    hd = window.__handData
+    if hd is None:
+        return None
+    return {"gesture": hd.gesture, "landmarks": [{"x": lm.x, "y": lm.y, "z": lm.z} for lm in hd.landmarks]}
 
 def background(color):
     if _ctx is None: return
@@ -85,7 +91,46 @@ def line(x1, y1, x2, y2):
     _ctx.moveTo(x1, y1)
     _ctx.lineTo(x2, y2)
     _ctx.stroke()
+
+def text(msg, x, y, size=20, color="white"):
+    if _ctx is None: return
+    _ctx.font = "bold " + str(size) + "px Nunito, sans-serif"
+    _ctx.fillStyle = _resolve(color)
+    _ctx.textAlign = "center"
+    _ctx.fillText(msg, x, y)
 `;
+
+const HAND_CONNECTIONS: [number, number][] = [
+  [0, 1], [1, 2], [2, 3], [3, 4],
+  [0, 5], [5, 6], [6, 7], [7, 8],
+  [0, 9], [9, 10], [10, 11], [11, 12],
+  [0, 13], [13, 14], [14, 15], [15, 16],
+  [0, 17], [17, 18], [18, 19], [19, 20],
+  [5, 9], [9, 13], [13, 17],
+];
+
+function classifyGesture(landmarks: any[]): string {
+  const wrist = landmarks[0];
+  function dist(a: any, b: any) {
+    return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
+  }
+  const thumbEx = dist(landmarks[4], wrist) > dist(landmarks[3], wrist) * 1.1;
+  const indexEx = dist(landmarks[8], wrist) > dist(landmarks[6], wrist) * 1.1;
+  const middleEx = dist(landmarks[12], wrist) > dist(landmarks[10], wrist) * 1.1;
+  const ringEx = dist(landmarks[16], wrist) > dist(landmarks[14], wrist) * 1.1;
+  const pinkyEx = dist(landmarks[20], wrist) > dist(landmarks[18], wrist) * 1.1;
+
+  const exCount = [indexEx, middleEx, ringEx, pinkyEx].filter(Boolean).length;
+
+  if (thumbEx && indexEx && middleEx && ringEx && pinkyEx) return "PAPER";
+  if (!thumbEx && !indexEx && !middleEx && !ringEx && !pinkyEx) return "ROCK";
+  if (!thumbEx && indexEx && middleEx && !ringEx && !pinkyEx) return "SCISSORS";
+  if (!thumbEx && indexEx && !middleEx && !ringEx && !pinkyEx) return "POINT";
+  if (thumbEx && !indexEx && !middleEx && !ringEx && !pinkyEx) return "THUMBS_UP";
+  if (!thumbEx && indexEx && middleEx && ringEx && !pinkyEx) return "OK";
+  if (exCount >= 3) return "PAPER";
+  return "HAND";
+}
 
 export default function ShowcaseTutorialPage() {
   const params = useParams();
@@ -105,6 +150,7 @@ export default function ShowcaseTutorialPage() {
 
   const animRef = useRef<number | null>(null);
   const animRunningRef = useRef(false);
+  const handTrackingRef = useRef<any>(null);
 
   // Set up global JS event listeners once
   useEffect(() => {
@@ -157,6 +203,7 @@ export default function ShowcaseTutorialPage() {
 
     return () => {
       window.__events = [];
+      stopHandTracking();
       animRunningRef.current = false;
       if (animRef.current) {
         cancelAnimationFrame(animRef.current);
@@ -199,6 +246,83 @@ export default function ShowcaseTutorialPage() {
     setPyodideLoading(false);
   };
 
+  const loadScript = (src: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      const s = document.createElement("script");
+      s.src = src;
+      s.onload = () => resolve();
+      s.onerror = () => reject();
+      document.head.appendChild(s);
+    });
+  };
+
+  const stopHandTracking = () => {
+    const ht = handTrackingRef.current;
+    if (ht) {
+      try { ht.camera.stop(); } catch {}
+      try { ht.hands.close(); } catch {}
+      try { ht.stream.getTracks().forEach((t: any) => t.stop()); } catch {}
+      if (ht.video && ht.video.parentNode) ht.video.parentNode.removeChild(ht.video);
+      handTrackingRef.current = null;
+    }
+    window.__handData = null;
+  };
+
+  const setupHandTracking = useCallback(async () => {
+    stopHandTracking();
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
+      const video = document.createElement("video");
+      video.id = "hand-video";
+      video.style.display = "none";
+      video.width = 640;
+      video.height = 480;
+      document.body.appendChild(video);
+      video.srcObject = stream;
+      await video.play();
+
+      if (!window.Hands) {
+        await loadScript("https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.js");
+        await loadScript("https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1675466120/camera_utils.js");
+      }
+
+      const hands = new window.Hands({
+        locateFile: (file: string) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${file}`,
+      });
+
+      hands.setOptions({
+        maxNumHands: 1,
+        modelComplexity: 1,
+        minDetectionConfidence: 0.6,
+        minTrackingConfidence: 0.5,
+      });
+
+      hands.onResults((results: any) => {
+        if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+          const landmarks = results.multiHandLandmarks[0];
+          const gesture = classifyGesture(landmarks);
+          window.__handData = { landmarks, gesture };
+        } else {
+          window.__handData = null;
+        }
+      });
+
+      const camera = new window.Camera(video, {
+        onFrame: async () => { await hands.send({ image: video }); },
+        width: 640,
+        height: 480,
+      });
+
+      await camera.start();
+
+      handTrackingRef.current = { hands, camera, video, stream };
+    } catch (e: any) {
+      console.error("Hand tracking setup failed:", e);
+      window.__handData = null;
+    }
+  }, []);
+
   const runStep = useCallback(async () => {
     if (!animRunningRef.current) return;
     try {
@@ -220,6 +344,11 @@ export default function ShowcaseTutorialPage() {
 
     setRunning(true);
     window.__events = [];
+    window.__handData = null;
+
+    if (p.id === "hand-gesture") {
+      await setupHandTracking();
+    }
 
     try {
       await pyodide.runPythonAsync(CANVAS_HELPER + "\n\n" + p.fullCode);
@@ -230,7 +359,7 @@ export default function ShowcaseTutorialPage() {
       console.error("Run error:", e);
     }
     setRunning(false);
-  }, [pyodide, params.id, runStep]);
+  }, [pyodide, params.id, runStep, setupHandTracking]);
 
   const handleStartTour = () => {
     setInTour(true);
@@ -347,6 +476,12 @@ export default function ShowcaseTutorialPage() {
         <div className="fixed bottom-4 right-4 left-4 sm:left-auto bg-emerald-900 text-white text-xs sm:text-sm rounded-xl px-4 py-3 flex items-center gap-2 shadow-lg z-50">
           <Loader2 size={14} className="animate-spin shrink-0" />
           <span className="truncate">Loading Python runtime (~15MB first time)...</span>
+        </div>
+      )}
+
+      {project?.id === "hand-gesture" && running && (
+        <div className="fixed bottom-4 right-4 bg-cyan-900 text-white text-xs rounded-xl px-4 py-3 shadow-lg z-50 flex items-center gap-2">
+          <span>📷 Camera active — show your hand!</span>
         </div>
       )}
     </div>
