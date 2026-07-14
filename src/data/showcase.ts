@@ -403,88 +403,135 @@ PIPE_GAP = 150`,
     fullCode: `create_canvas(640, 480)
 
 GESTURES = {
-    "ROCK": "✊ Rock",
-    "PAPER": "✋ Paper",
-    "SCISSORS": "✌️ Scissors",
-    "THUMBS_UP": "👍 Thumbs Up",
-    "POINT": "☝️ Pointing",
-    "OK": "👌 OK",
+    "ROCK": "✊ Rock", "PAPER": "✋ Paper", "SCISSORS": "✌️ Scissors",
+    "THUMBS_UP": "👍 Thumbs Up", "POINT": "☝️ Pointing", "OK": "👌 OK",
     "HAND": "🤚 Hand",
+}
+GESTURE_COLORS = {
+    "ROCK": "#ff4466", "PAPER": "#44bbdd", "SCISSORS": "#ffdd44",
+    "THUMBS_UP": "#44dd66", "POINT": "#ff8844", "OK": "#cc66ff",
+    "HAND": "#888888",
 }
 SKELETON = [(0,1),(1,2),(2,3),(3,4),(0,5),(5,6),(6,7),(7,8),(0,9),(9,10),(10,11),(11,12),(0,13),(13,14),(14,15),(15,16),(0,17),(17,18),(18,19),(19,20),(5,9),(9,13),(13,17)]
 
 def step():
-    background("#1a1a2e")
+    draw_video()
     hd = get_hand_data()
+
+    # Semi-transparent overlay at top and bottom
+    fill("rgba(0,0,0,0.5)")
+    rect(0, 0, 640, 70)
+    rect(0, 430, 640, 50)
+
     if hd is None:
-        text("Show your hand to the camera", 320, 240, 22, "#666666")
+        fill("#ffffff")
+        text("Show your hand to the camera", 320, 240, 26, "#ffffff")
+        text("Make a gesture: Rock | Paper | Scissors | Thumbs Up | Point", 320, 270, 14, "#aaaaaa")
         return
 
     landmarks = hd["landmarks"]
     gesture = hd["gesture"]
 
-    # Draw skeleton connections
+    # Draw skeleton connections with glow
     for i, j in SKELETON:
         x1 = landmarks[i]["x"] * 640
         y1 = landmarks[i]["y"] * 480
         x2 = landmarks[j]["x"] * 640
         y2 = landmarks[j]["y"] * 480
+        fill("rgba(68,221,136,0.3)")
+        line(x1 - 1, y1 - 1, x2 - 1, y2 - 1)
+        line(x1 + 1, y1 + 1, x2 + 1, y2 + 1)
         fill("#44dd88")
         line(x1, y1, x2, y2)
 
-    # Draw joint dots
+    # Draw joint dots with glow
     for lm in landmarks:
+        fill("rgba(255,255,255,0.3)")
+        circle(lm["x"] * 640, lm["y"] * 480, 8)
         fill("#ffffff")
         circle(lm["x"] * 640, lm["y"] * 480, 5)
 
-    # Gesture name at top
+    # Gesture name in colored banner
     label = GESTURES.get(gesture, gesture)
-    color_map = {"ROCK": "#ff4466", "PAPER": "#44bbdd", "SCISSORS": "#ffdd44", "THUMBS_UP": "#44dd66", "POINT": "#ff8844", "OK": "#cc66ff", "HAND": "#888888"}
-    c = color_map.get(gesture, "white")
-    fill(c)
-    rect(200, 10, 240, 50)
-    fill("#1a1a2e")
-    text(label, 320, 46, 24, c)
+    gc = GESTURE_COLORS.get(gesture, "#ffffff")
+    fill(gc)
+    rect(190, 10, 260, 50)
+    fill("rgba(0,0,0,0.6)")
+    rect(195, 15, 250, 40)
+    fill(gc)
+    text(label, 320, 44, 26, gc)
+
+    # Gesture emoji large on right side
+    emoji_map = {"ROCK": "✊", "PAPER": "✋", "SCISSORS": "✌️", "THUMBS_UP": "👍", "POINT": "☝️", "OK": "👌", "HAND": "🤚"}
+    emoji = emoji_map.get(gesture, "🖐️")
+    fill(gc)
+    text(emoji, 560, 60, 40, gc)
+
+    # Fingertip positions
+    tips = [("Thumb", 4), ("Index", 8), ("Middle", 12), ("Ring", 16), ("Pinky", 20)]
+    fill("rgba(0,0,0,0.5)")
+    rect(5, 435, 200, 40)
+    for i, (name, idx) in enumerate(tips):
+        lm = landmarks[idx]
+        x = lm["x"] * 640
+        y = lm["y"] * 480
+        fill(GESTURE_COLORS.get(gesture, "#ffffff"))
+        circle(x, y, 6)
+        fill("#ffffff")
+        text(name + " (" + str(int(lm["x"] * 100)) + "," + str(int(lm["y"] * 100)) + ")", x + 40, y + 5, 9, "#ffffff")
+
+    # Landmark count and status
+    fill("rgba(0,0,0,0.5)")
+    rect(440, 435, 195, 40)
+    fill("#44dd88" if gesture != "HAND" else "#ff8844")
+    text("21 landmarks • " + label, 540, 460, 12, "#ffffff")
 
     # Instructions
-    fill("#444488")
-    text("Rock | Paper | Scissors | Thumbs Up | Point | OK", 320, 470, 12, "#666688")`,
+    fill("#aaaaaa")
+    text("Try: Rock ✊ | Paper ✋ | Scissors ✌️ | Thumbs Up 👍 | Point ☝️ | OK 👌", 320, 476, 11, "#888888")`,
     steps: [
       {
-        title: "Canvas Setup & Gesture Labels",
+        title: "Canvas Setup & Live Video",
         code: `create_canvas(640, 480)
 
 GESTURES = {
-    "ROCK": "✊ Rock",
-    "PAPER": "✋ Paper",
-    "SCISSORS": "✌️ Scissors",
-    "THUMBS_UP": "👍 Thumbs Up",
-    "POINT": "☝️ Pointing",
-    "OK": "👌 OK",
+    "ROCK": "✊ Rock", "PAPER": "✋ Paper", "SCISSORS": "✌️ Scissors",
+    "THUMBS_UP": "👍 Thumbs Up", "POINT": "☝️ Pointing", "OK": "👌 OK",
     "HAND": "🤚 Hand",
+}
+GESTURE_COLORS = {
+    "ROCK": "#ff4466", "PAPER": "#44bbdd", "SCISSORS": "#ffdd44",
+    "THUMBS_UP": "#44dd66", "POINT": "#ff8844", "OK": "#cc66ff",
+    "HAND": "#888888",
 }`,
-        explanation: `Creates a 640x480 canvas for the camera view. GESTURES maps internal names to display labels with emojis. The AI detects your hand and classifies it into one of these poses!`,
+        explanation: `Creates a 640x480 canvas. draw_video() will draw the live webcam feed as the background every frame. GESTURES maps detected poses to display names with emojis, and GESTURE_COLORS gives each a unique color!`,
       },
       {
-        title: "Skeleton Connections",
+        title: "Skeleton & Step Function",
         code: `SKELETON = [(0,1),(1,2),(2,3),(3,4),(0,5),(5,6),(6,7),(7,8),
   (0,9),(9,10),(10,11),(11,12),(0,13),(13,14),(14,15),(15,16),
-  (0,17),(17,18),(18,19),(19,20),(5,9),(9,13),(13,17)]`,
-        explanation: `These 21 landmark indices define the hand skeleton. Each pair connects two joints: thumb (0-4), index (5-8), middle (9-12), ring (13-16), pinky (17-20), plus palm connections (5-9-13-17).`,
+  (0,17),(17,18),(18,19),(19,20),(5,9),(9,13),(13,17)]
+
+def step():
+    draw_video()
+    hd = get_hand_data()`,
+        explanation: `SKELETON defines 21 bone connections. step() first draws the live webcam feed as the canvas background using draw_video(), then reads the latest hand landmarks detected by AI.`,
       },
       {
-        title: "The Step Function",
-        code: `def step():
-    background("#1a1a2e")
-    hd = get_hand_data()
-    if hd is None:
-        text("Show your hand to the camera", 320, 240, 22, "#666666")
+        title: "No Hand Detected — Show Prompt",
+        code: `    if hd is None:
+        fill("rgba(0,0,0,0.5)")
+        rect(0, 0, 640, 70)
+        rect(0, 430, 640, 50)
+        text("Show your hand to the camera", 320, 240, 26, "#ffffff")
+        text("Make a gesture: Rock | Paper | Scissors...", 320, 270, 14, "#aaaaaa")
         return`,
-        explanation: `step() runs every frame. get_hand_data() reads the latest hand landmarks detected by MediaPipe in the browser. If no hand is visible, it shows a prompt. This is where Python meets AI!`,
+        explanation: `If no hand is visible, semi-transparent black bars appear at top and bottom with helpful instructions. The live webcam feed is still visible behind them!`,
       },
       {
-        title: "Draw the Hand Skeleton",
+        title: "Draw the Hand Skeleton Overlay",
         code: `    landmarks = hd["landmarks"]
+    gesture = hd["gesture"]
     for i, j in SKELETON:
         x1 = landmarks[i]["x"] * 640
         y1 = landmarks[i]["y"] * 480
@@ -495,35 +542,39 @@ GESTURES = {
     for lm in landmarks:
         fill("#ffffff")
         circle(lm["x"] * 640, lm["y"] * 480, 5)`,
-        explanation: `Each landmark has x, y, z between 0-1. We multiply by canvas size (640x480) to get pixel positions. Green lines connect bones, white dots mark joints. The skeleton follows your hand in real-time!`,
+        explanation: `Landmarks are 0-1 normalized coordinates. We scale them to 640x480. Green lines connect bones, white dots mark joints — all drawn ON TOP of your live webcam feed!`,
       },
       {
-        title: "Gesture Detection",
-        code: `    gesture = hd["gesture"]
-    color_map = {"ROCK": "#ff4466", "PAPER": "#44bbdd",
-      "SCISSORS": "#ffdd44", "THUMBS_UP": "#44dd66",
-      "POINT": "#ff8844", "OK": "#cc66ff", "HAND": "#888888"}
-    c = color_map.get(gesture, "white")
-    fill(c)
-    rect(200, 10, 240, 50)`,
-        explanation: `The JavaScript code classifies your hand pose by checking which fingers are extended (comparing fingertip-to-wrist distances). Each gesture gets a color-coded banner at the top of the screen!`,
+        title: "Gesture Banner & Emoji",
+        code: `    gc = GESTURE_COLORS.get(gesture, "#ffffff")
+    fill(gc)
+    rect(190, 10, 260, 50)
+    text(label, 320, 44, 26, gc)
+
+    emoji_map = {"ROCK": "✊", "PAPER": "✋", ...}
+    emoji = emoji_map.get(gesture, "🖐️")
+    text(emoji, 560, 60, 40, gc)`,
+        explanation: `A colored banner at the top shows the gesture name. A large emoji floats on the right — ✊ for Rock, ✋ for Paper, ✌️ for Scissors, 👍 for Thumbs Up, ☝️ for Point, 👌 for OK.`,
       },
       {
-        title: "Display the Gesture Label",
-        code: `    label = GESTURES.get(gesture, gesture)
-    fill("#1a1a2e")
-    text(label, 320, 46, 24, c)`,
-        explanation: `Draws the gesture name and emoji in the colored banner. "ROCK" shows ✊ Rock in red, "PAPER" shows ✋ Paper in blue, "SCISSORS" shows ✌️ Scissors in yellow, and so on!`,
+        title: "Fingertip Tracking Info",
+        code: `    tips = [("Thumb",4),("Index",8),("Middle",12),("Ring",16),("Pinky",20)]
+    for i, (name, idx) in enumerate(tips):
+        lm = landmarks[idx]
+        fill(gc)
+        circle(lm["x"]*640, lm["y"]*480, 6)
+        text(name+" ("+str(int(lm["x"]*100))+","+str(int(lm["y"]*100))+")", ...)`,
+        explanation: `Each fingertip is highlighted with a colored dot and labeled with its name and normalized coordinates. The bottom-left panel shows fingertip positions — great for understanding how MediaPipe tracks your hand!`,
       },
       {
-        title: "How It Works — Behind the Scenes",
-        code: `# JavaScript handles the AI:
-# 1. MediaPipe Hands detects 21 landmarks
-# 2. Gesture classifier checks finger extension
-# 3. Result stored in window.__handData
-# 4. Python reads it via get_hand_data()
-# 5. Python draws skeleton + label`,
-        explanation: `The heavy AI work runs in JavaScript (MediaPipe WASM). Python's job is to read the results and draw them beautifully. This is a great example of using Python for visualization while JS handles real-time ML!`,
+        title: "How It All Works Together",
+        code: `# 1. Browser: webcam → MediaPipe → landmarks
+# 2. JS: classifyGesture() → detects pose
+# 3. stored in window.__handData
+# 4. Python: get_hand_data() reads it
+# 5. draw_video() shows live cam
+# 6. Skeleton + gesture drawn on top`,
+        explanation: `The magic: React accesses your webcam, MediaPipe's WASM detects 21 hand landmarks in real-time, JavaScript classifies the gesture, and Python draws everything beautifully on the canvas — live video, skeleton, labels, and all! Just click Run and show your hand!`,
       },
     ],
   },

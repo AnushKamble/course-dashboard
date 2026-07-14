@@ -98,6 +98,14 @@ def text(msg, x, y, size=20, color="white"):
     _ctx.fillStyle = _resolve(color)
     _ctx.textAlign = "center"
     _ctx.fillText(msg, x, y)
+
+def draw_video(x=0, y=0, w=None, h=None):
+    if _ctx is None: return
+    vid = document.getElementById("hand-video")
+    if vid is None: return
+    if w is None: w = _canvas.width
+    if h is None: h = _canvas.height
+    _ctx.drawImage(vid, x, y, w, h)
 `;
 
 const HAND_CONNECTIONS: [number, number][] = [
