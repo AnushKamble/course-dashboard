@@ -205,24 +205,18 @@ export default function ShowcaseTutorialPage() {
       await window.pyodide.runPythonAsync("step()");
     } catch (e: any) {
       console.error("step error:", e);
-      animRunningRef.current = false;
-      return;
     }
     if (animRunningRef.current) {
       animRef.current = requestAnimationFrame(runStep);
     }
   }, []);
 
-  const handleRun = useCallback(async () => {
+  const handleRun = useCallback(async (event?: React.MouseEvent) => {
+    if (animRunningRef.current) return;
     const p = showcaseProjects.find((x) => x.id === params.id);
     if (!pyodide || !p) return;
 
-    // Stop any existing animation cleanly
-    animRunningRef.current = false;
-    if (animRef.current) {
-      cancelAnimationFrame(animRef.current);
-      animRef.current = null;
-    }
+    if (event) (event.currentTarget as HTMLElement).blur();
 
     setRunning(true);
     window.__events = [];
@@ -302,7 +296,7 @@ export default function ShowcaseTutorialPage() {
                   Exit Tour
                 </button>
               )}
-              <button onClick={handleRun} disabled={running || pyodideLoading || !pyodideReady}
+              <button onClick={(e) => handleRun(e)} disabled={running || pyodideLoading || !pyodideReady}
                 className="flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-green-600 hover:bg-green-500 disabled:bg-gray-600 text-white text-xs sm:text-sm font-semibold rounded-lg transition-all active:scale-95">
                 {running ? <Loader2 size={14} className="animate-spin" /> : <Play size={14} />}
                 Run

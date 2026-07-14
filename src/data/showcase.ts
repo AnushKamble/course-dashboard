@@ -221,7 +221,7 @@ PIPE_GAP = 150
 def step():
     global bird_y, pipe_x, gap_y, score, game_over
     for evt in poll_events():
-        if evt["type"] == "keydown" and evt["code"] == "Space" and not game_over:
+        if evt["type"] == "keydown" and evt["code"] in ("Space", "ArrowUp") and not game_over:
             bird_y -= 80
 
     if game_over:
@@ -250,7 +250,7 @@ def step():
             game_over = True
             return
 
-    if pipe_x + 40 < 100 and pipe_x + 40 > 96:
+    if pipe_x + 40 < 100 and pipe_x + 40 >= 96:
         score += 1
 
     fill("white")
@@ -274,9 +274,9 @@ PIPE_GAP = 150`,
         code: `def step():
     global bird_y, pipe_x, gap_y, score, game_over
     for evt in poll_events():
-        if evt["type"] == "keydown" and evt["code"] == "Space" and not game_over:
+        if evt["type"] == "keydown" and evt["code"] in ("Space", "ArrowUp") and not game_over:
             bird_y -= 80`,
-        explanation: `step() runs every frame. poll_events() gets all keyboard/mouse events from the browser. If Space is pressed and the game isn't over, the bird jumps UP by 80 pixels!`,
+        explanation: `step() runs every frame. poll_events() gets all keyboard/mouse events from the browser. If Space or ArrowUp is pressed and the game isn't over, the bird jumps UP by 80 pixels!`,
       },
       {
         title: "Game Over Check & Gravity",
@@ -311,12 +311,12 @@ PIPE_GAP = 150`,
       },
       {
         title: "Score & Scoreboard",
-        code: `    if pipe_x + 40 < 100 and pipe_x + 40 > 96:
+        code: `    if pipe_x + 40 < 100 and pipe_x + 40 >= 96:
         score += 1
 
     fill("white")
     rect(180, 10, 40, 30)`,
-        explanation: `When the pipe's right edge passes behind the bird (x crosses 96-100 range), score increases! A white scoreboard rectangle is drawn at the top.`,
+        explanation: `When the pipe passes behind the bird (x crosses 100), score increases by 1. The >= ensures it counts exactly once per pipe. A white scoreboard rectangle is drawn at the top.`,
       },
       {
         title: "No Extra Wiring Needed",
