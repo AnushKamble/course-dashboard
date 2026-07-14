@@ -287,7 +287,7 @@ export default function ShowcaseTutorialPage() {
     window.__handStatus = "requesting_camera";
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480, facingMode: "user" } });
       const video = document.createElement("video");
       video.id = "hand-video";
       video.style.display = "none";
@@ -300,11 +300,11 @@ export default function ShowcaseTutorialPage() {
       window.__handStatus = "loading_model";
 
       if (!window.Hands) {
-        await loadScript("https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4/hands.js");
+        await loadScript("https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.js");
       }
 
       const hands = new window.Hands({
-        locateFile: (file: string) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4/${file}`,
+        locateFile: (file: string) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${file}`,
       });
 
       hands.setOptions({
@@ -316,9 +316,9 @@ export default function ShowcaseTutorialPage() {
 
       hands.onResults((results: any) => {
         if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-          const landmarks = results.multiHandLandmarks[0];
-          const gesture = classifyGesture(landmarks);
-          window.__handData = { landmarks, gesture };
+          const raw = results.multiHandLandmarks[0];
+          const gesture = classifyGesture(raw);
+          window.__handData = { landmarks: raw.map((lm: any) => ({ x: lm.x, y: lm.y, z: lm.z })), gesture };
           window.__handStatus = "hand_detected";
         } else {
           window.__handData = null;
@@ -327,14 +327,19 @@ export default function ShowcaseTutorialPage() {
       });
 
       let running = true;
+      let busy = false;
+      let failCount = 0;
       const sendFrame = async () => {
-        if (!running) return;
+        if (!running || busy) { if (running) setTimeout(sendFrame, 100); return; }
+        busy = true;
         try {
           await hands.send({ image: video });
+          failCount = 0;
         } catch (e: any) {
-          console.error("MediaPipe error:", e);
-          window.__handStatus = "model_error";
+          failCount++;
+          if (failCount > 5) window.__handStatus = "model_error";
         }
+        busy = false;
         if (running) setTimeout(sendFrame, 50);
       };
       sendFrame();
